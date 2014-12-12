@@ -3,14 +3,17 @@
 
 	/**
 	 * @ngdoc module
-	 * @name err.timeline
+	 * @name battlesnake.timeline
 	 * @requires underscore
 	 * @requires moment
 	 * @requires ngTouch
 	 *
 	 * @description
 	 * Timeline widget
+	 *
+	 * @example
+	 * See demos/etv.html
 	 */
-	angular.module('err.timeline', ['ngTouch', 'monospaced.mousewheel']);
+	angular.module('battlesnake.timeline', ['ngTouch', 'monospaced.mousewheel']);
 
 })(window.angular);

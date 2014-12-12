@@ -1,7 +1,7 @@
 (function (angular) {
 	'use strict';
 	
-	angular.module('err.timeline')
+	angular.module('battlesnake.timeline')
 		.directive('timeline', timelineDirective);
 
 	function timelineDirective($window) {

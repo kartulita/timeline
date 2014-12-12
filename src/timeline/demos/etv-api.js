@@ -9,8 +9,10 @@
 	 *
 	 * GET endpoint?year=YYYY&month=MM&day=DD
 	 *
-	 * It responds with an array of items (shows) which are then transformed
-	 * by the mapItem function.
+	 * The server responds with an array of items (shows) which are then
+	 * transformed by the mapItem function.
+	 *
+	 * i.e: items = httpGet(endpoint?year=YYYY&month=MM&day=DD).map(mapItem)
 	 *
 	 * Demo'ing this requires your browser to have CORS checks disabled unless
 	 * you run it from the live domain.
@@ -32,10 +34,15 @@
 		function mapItem(item) {
 
 			return {
+				/* Unique ID of item */
 				id: item.Id,
+				/* Title of item */
 				title: item.HeaderLong,
+				/* Start time */
 				start: moment(item.Published),
+				/* Address of image to display in timeline */
 				thumbnail: getThumbnailUrl(item),
+				/* Address of larger image (not used yet) */
 				image: getImageUrl(item)
 			};
 

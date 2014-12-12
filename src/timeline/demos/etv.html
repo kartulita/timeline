@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Timeline demo</title>
+<meta charset="utf8">
+<!-- CSS for the timeline.  Inspired by the CSS for the previous timeline,   -->
+<!-- but otherwise a total re-write.                                         -->
+<link rel="stylesheet" href="../timeline.css">
+<!-- Dependencies (remember to `bower install` in the module folder before   -->
+<!-- running this demo                                                       -->
+<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+<script src="../bower_components/moment/min/moment-with-locales.min.js"></script>
+<script src="../bower_components/underscore/underscore-min.js"></script>
+<script src="../bower_components/angular/angular.min.js"></script>
+<script src="../bower_components/angular-touch/angular-touch.min.js"></script>
+<script src="../bower_components/hamsterjs/hamster.js"></script>
+<script src="../bower_components/angular-mousewheel/mousewheel.js"></script>
+<!-- For debugging purposes, I include each script explicitly.               -->
+<!-- In production, you would ng-annotate=>concatenate=>uglify the scripts   -->
+<!-- to produce one small bundle script                                      -->
+<script src="../module.js"></script>
+<script src="../service.js"></script>
+<script src="../filters.js"></script>
+<script src="../timeline-controller.js"></script>
+<script src="../timeline-directive.js"></script>
+<script src="../timeline-days-directive.js"></script>
+<script src="../timeline-day-directive.js"></script>
+<script src="../timeline-items-directive.js"></script>
+<!-- This script defines our angular application.  Its main purpose is to    -->
+<!-- reference the battlesnake.timeline module, so that our timeline         -->
+<!-- directive is recognised.                                                -->
+<script>
+(function (angular) {
+	'use strict';
+
+	/* Remember to add 'battlesnake.timeline' to your module's dependencies */
+	angular.module('demo', ['battlesnake.timeline'])
+		.controller('demoController', demoController);
+
+	function demoController($scope) {
+		$scope.model = {
+			title: 'Timeline demo'
+		};
+	}
+
+})(window.angular);
+</script>
+<!-- This script defines the API for getting timeline data from the server   -->
+<!-- It defines a factory called "ETVTimelineAPI".  Examine the script to    -->
+<!-- see how to define your own APIs                                         -->
+<script src="etv-api.js"></script>
+<style>
+body {
+	font-family: sans-serif;
+	margin: 60px;
+}
+</style>
+</head>
+<body ng-app="demo" ng-controller="demoController">
+	<h1 ng-bind="model.title"></h1>
+	<!-- The "timeline" attribute specifies the name of the factory          -->
+	<!-- that provides the API to use.  The provided name has "TimelineAPI"  -->
+	<!-- appended to it, to produce the name of the factory.  This example   -->
+	<!-- factory is found in the associated script (etv-api.js)              -->
+	<div timeline="ETV" style="margin-top: 60px;"></div>
+	<!-- That's all there is to it! -->
+</body>
+</html>

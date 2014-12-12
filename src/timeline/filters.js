@@ -1,7 +1,7 @@
 (function (angular, moment) {
 	'use strict';
 
-	angular.module('err.timeline')
+	angular.module('battlesnake.timeline')
 		.filter('timelineDate', timelineDateFilter)
 		.filter('timelineTime', timelineTimeFilter)
 		;

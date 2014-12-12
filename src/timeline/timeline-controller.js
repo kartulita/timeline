@@ -1,7 +1,7 @@
 (function (angular, _, moment) {
 	'use strict';
 	
-	angular.module('err.timeline')
+	angular.module('battlesnake.timeline')
 		.controller('timelineController', timelineController);
 
 	function timelineController($scope, $timeout, $interval, showsService) {
