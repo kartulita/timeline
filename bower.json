@@ -1,0 +1,18 @@
+{
+  "name": "err-timeline",
+  "version": "0.0.0",
+  "authors": [
+    "Mark K Cowan <mark@battlesnake.co.uk>"
+  ],
+  "description": "AngularJS remake of ERR Timeline widget",
+  "license": "GPL3",
+  "homepage": "github.com/kartulita/timeline",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

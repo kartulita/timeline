@@ -1,0 +1,185 @@
+/*
+ * timeline-widget
+ *   timeline-nav prev
+ *   timeline-nav next
+ *   timeline-days
+ *     timeline-day[]
+ *       timeline-day-title
+ *       timeline-items
+ *         timeline-items-column[]
+ *           timeline-item-container[2]
+ *             timeline-item
+ */
+
+@import 'bower_components/fontawesome/css/font-awesome.css';
+
+.timeline-widget {
+	box-sizing: border-box;
+	position: relative;
+	display: block;
+	overflow-x: hidden;
+	overflow-y: hidden;
+	background: #3b4257;
+	border: 0;
+	border-top: 3px solid #ea297a;
+	height: 380px;
+	width: 100%;
+	padding: 16px 16px 32px;
+	color: white;
+	font-family: Abel, sans-serif;
+	text-rendering: optimizeLegibility;
+	font-weight normal;
+	line-height: 1;
+	font-style: normal;
+	text-decoration: none;
+}
+
+.timeline-widget a {
+	text-decoration: none;
+	color: white;
+}
+
+.timeline-nav {
+	position: absolute;
+	display: block;
+	background: #ea297a;
+	color: white;
+	speak: none;
+	font-family: FontAwesome;
+	font-size: 50px;
+	font-weight: bold;
+	top: 50%;
+	/* Thanks, Maret for showing me this nice vertical-centering hack */
+	padding: 24px;
+	margin-top: -49px;
+	transition: background 800ms ease;
+	z-index: 1000;
+}
+
+.timeline-nav:hover {
+	background: #bb2665;
+	color: white;
+	transition: none;
+}
+
+.timeline-nav.prev {
+	left: 0;
+}
+
+.timeline-nav.prev:before {
+	content: '\f104';
+	text-align: right;
+}
+
+.timeline-nav.next {
+	right: 0;
+}
+
+.timeline-nav.next:before {
+	content: '\f105';
+	text-align: left;
+}
+
+.timeline-days {
+	display: inline-block;
+	white-space: nowrap;
+	overflow: hidden;
+	z-index: 1;
+	/* Animation smoothing */
+	transition: transform 100ms linear;
+	left: 0;
+}
+
+.timeline-day {
+	display: inline-block;
+	margin: 0 10px 0;
+}
+
+.timeline-day-title {
+	display: block;
+	white-space: nowrap;
+	font-size: 22px;
+	line-height: 26px;
+	font-weight: bold;
+	margin: 6px 0;
+}
+
+.timeline-items {
+	/*
+	 * Flexbox doesn't auto-grow-to-fit in cross-axis direction so we can't just
+	 * use a simple [ display: flex; flex-flow: column wrap ] here
+	 */
+	overflow: hidden;
+	height: 304px;
+}
+
+.timeline-items-column {
+	display: inline-block;
+	margin: -8px 8px -8px 0;
+	vertical-align: top;
+}
+
+.timeline-item-container {
+	box-sizing: border-box;
+	display: block;
+	margin: 8px 0;
+	height: 144px;
+	width: 144px;
+}
+
+.timeline-item {
+	position: relative;
+	display: block;
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+	background: rgba(0,0,0,0.3);
+	border: 1px solid rgba(255,255,255,0.3);
+}
+
+.timeline-item.phantom {
+	visibility: hidden;
+}
+
+.timeline-item-header {
+	background: rgba(0,0,10,0.4);
+	padding-top: 10px;
+	position: absolute;
+	left: 0;
+	right: 0;
+	height: 144px;
+	bottom: -117px;
+	transition: all 400ms ease-in-out;
+	transition-delay: 400ms;
+}
+
+.timeline-item-header>* {
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.timeline-item:hover>.timeline-item-header {
+	bottom: -13px;
+	padding-top: 100px;
+	transition-delay: 300ms;
+	background: rgba(234,41,122,0.9);
+}
+
+.timeline-item:hover>.timeline-item-header>* {
+	white-space: normal;
+}
+
+.timeline-item-time {
+	font-size: 10px;
+	line-height: 16px;
+	margin-top: -6px;
+	padding: 0 4px;
+}
+
+.timeline-item-title {
+	font-size: 14px;
+	line-height: 18px;
+	margin-top: -3px;
+	padding: 0 4px 4px;
+	font-weight: bold;
+}

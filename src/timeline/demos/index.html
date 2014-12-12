@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Timeline demo</title>
+<meta charset="utf8">
+<link rel="stylesheet" href="../timeline.css">
+<script src="../bower_components/jquery/dist/jquery.js"></script>
+<script src="../bower_components/moment/moment.js"></script>
+<script src="../bower_components/underscore/underscore.js"></script>
+<script src="../bower_components/angularjs/angular.js"></script>
+<script src="../module.js"></script>
+<script src="../service.js"></script>
+<script src="../filters.js"></script>
+<script src="../timeline-directive.js"></script>
+<script src="../timeline-items-directive.js"></script>
+<script>
+(function (angular) {
+	'use strict';
+
+	angular.module('demo', ['err.timeline'])
+		.controller('demoController', demoController)
+		;
+
+	function demoController($scope) {
+		$scope.model = {
+			title: 'Timeline demo'
+		};
+	}
+
+})(window.angular);
+</script>
+<style>
+body {
+	font-family: sans-serif;
+	margin: 60px;
+}
+</style>
+</head>
+<body ng-app="demo" ng-controller="demoController">
+	<h1 ng-bind="model.title"></h1>
+	<div timeline-widget style="margin-top: 60px;"></div>
+</body>
+</html>
