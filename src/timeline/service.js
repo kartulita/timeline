@@ -4,46 +4,74 @@
 	angular.module('err.timeline')
 		.factory('showsService', showsService);
 
-	var mock = [
-		{ id: 0, title: 'Søørømøø', start: moment().subtract(45, 'minutes') },
-		{ id: 1, title: 'Terevisioon', start: moment().subtract(30, 'minutes') },
-		{ id: 2, title: 'Spooks', start: moment().subtract(15, 'minutes') },
-		{ id: 3, title: 'Suur Arbuus', start: moment().add(15, 'minutes') }
-	];
+	/*
+	 * Use the "timeline" attribute directive to specify the source to use
+	 * Example source in demos/etv-api.js
+	 */
+	function showsService($http, $q, $injector) {
 
-	for (var id = 4; id < 50; id++) {
-		mock.push(
-			{ id: id, title: 'Future show #' + id, start: moment().add(id, 'hours') });
-	}
-	for (var id = -10; id < 0; id++) {
-		mock.push(
-			{ id: id, title: 'Past show #' + -id, start: moment().subtract(-id + 1, 'hours') });
-	}
+		var sources = {};
 
-	mock = _(mock).sortBy('start');
+		return getSource;
+		
+		function getSource(name) {
+			if (!_(sources).has(name)) {
+				var api = $injector.get(name + 'TimelineAPI');
+				sources[name] = {
+					api: api,
+					cache: {}
+				};
+			}
 
-	function showsService($http, $q) {
-		return {
-			getDay: getDay,
-			getCurrent: getCurrent
-		};
+			var source = sources[name];
+			var api = source.api;
+			var cache = source.cache;
 
-		function getDay(day) {
-			return $q.when(mock);
-		}
+			return {
+				getDay: getDay,
+				getCurrent: getCurrent
+			};
 
-		function getCurrent() {
-			/* Assumes data is in ascending order by start time */
-			return _(mock)
-				.reduceRight(function (memo, item) {
-					if (memo !== undefined) {
-						return memo;
-					} else if (item.start.isBefore(moment())) {
-						return item;
-					} else {
-						return undefined;
-					}
-				}, undefined);
+			function getDay(day) {
+				day = moment(day);
+				var key = day.format('YYYY-MM-DD');
+				/* Check cache */
+				if (_(cache).has(key)) {
+					return cache[key];
+				}
+				/* Get from backend */
+				return $http(
+					{
+						method: 'GET',
+						url: api.endpoint,
+						params: {
+							year: day.format('YYYY'),
+							month: day.format('MM'),
+							day: day.format('DD')
+						}
+					})
+					.then(transformData)
+					.then(cacheData);
+				
+				function transformData(res) {
+					return _(res.data).map(api.mapItem);
+				}
+
+				function cacheData(data) {
+					cache[key] = data;
+					return data;
+				}
+			}
+
+			function getCurrent() {
+				/* Assumes data is in ascending order by start time */
+				var now = moment();
+				return _(cache).first(function (day) {
+					return _(day).first(function (item) {
+						return item.start.isBefore(now);
+					});
+				});
+			}
 		}
 	}
 

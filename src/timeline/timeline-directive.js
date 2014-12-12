@@ -2,13 +2,15 @@
 	'use strict';
 	
 	angular.module('err.timeline')
-		.directive('timelineWidget', timelineWidgetDirective);
+		.directive('timeline', timelineDirective);
 
-	function timelineWidgetDirective($window) {
+	function timelineDirective($window) {
 		return {
-			restrict: 'EA',
-			scope: {},
-			controller: 'timelineWidgetController',
+			restrict: 'A',
+			scope: {
+				source: '@timeline'
+			},
+			controller: 'timelineController',
 			templateUrl: '../timeline.html',
 			link: link
 		};

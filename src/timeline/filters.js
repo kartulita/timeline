@@ -14,7 +14,7 @@
 
 	function timelineTimeFilter() {
 		return function (when) {
-			return moment(when).local().format('hh:mm');
+			return moment(when).local().format('HH:mm');
 		};
 	}
 

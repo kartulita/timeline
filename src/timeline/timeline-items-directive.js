@@ -16,33 +16,30 @@
 
 		function link(scope, element, attrs, ctrl, transclude) {
 			var rowCount = 2;
-			var parent = element.parent();
-			var navController = parent.controller('timelineWidgetController');
 
-			attrs.$observe('timelineItems', rebuildList);
-			scope.$watch('model.currentId', rebuildList);
+			var matches = attrs.timelineItems.match(itemsParser);
+			if (!matches) {
+				throw new Error('timeline-items expression is not in the form of "<name> in <collection>"');
+			}
+			var local = matches[1];
+			var source = matches[2];
+			scope.$watch('model.current', rebuildList);
+			scope.$watch(source, rebuildList);
+
+			scope.isCurrent = function (item) {
+				var current = scope.model.current;
+				return current && item.id === current.id;
+			};
 
 			return;
 
-			function parseExpr(expr) {
-				var matches = expr.match(itemsParser);
-				if (!matches) {
-					throw new Error('timeline-items expression is not in the form of "<name> in <collection>": ' + expr);
-				}
-				return {
-					local: matches[1],
-					collection: $parse(matches[2])(scope)
-				};
-			}
-
 			function rebuildList() {
-				var expr = parseExpr(attrs.timelineItems);
+				var items = $parse(source)(scope);
+				element.empty();
+
 				var tuple;
 				var rows;
-				element.empty();
 				newRow();
-
-				var items = expr.collection;
 
 				var currentIndex = -1;
 
@@ -103,7 +100,7 @@
 						newRow();
 					}
 					var itemScope = scope.$new();
-					itemScope[expr.local] = item;
+					itemScope[local] = item;
 					transclude(itemScope, function (clone, scope) {
 						addToRow(clone);
 					});

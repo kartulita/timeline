@@ -14,8 +14,10 @@
 <script src="../module.js"></script>
 <script src="../service.js"></script>
 <script src="../filters.js"></script>
-<script src="../timeline-directive.js"></script>
 <script src="../timeline-controller.js"></script>
+<script src="../timeline-directive.js"></script>
+<script src="../timeline-days-directive.js"></script>
+<script src="../timeline-day-directive.js"></script>
 <script src="../timeline-items-directive.js"></script>
 <script>
 (function (angular) {
@@ -32,6 +34,7 @@
 
 })(window.angular);
 </script>
+<script src="etv-api.js"></script>
 <style>
 body {
 	font-family: sans-serif;
@@ -41,6 +44,6 @@ body {
 </head>
 <body ng-app="demo" ng-controller="demoController">
 	<h1 ng-bind="model.title"></h1>
-	<div timeline-widget style="margin-top: 60px;"></div>
+	<div timeline="ETV" style="margin-top: 60px;"></div>
 </body>
 </html>

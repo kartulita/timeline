@@ -1,0 +1,3 @@
+[submodule "build"]
+	path = build
+	url = git@github.com:kartulita/hacky-build-system
