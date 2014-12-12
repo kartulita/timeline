@@ -4,22 +4,25 @@
 <title>Timeline demo</title>
 <meta charset="utf8">
 <link rel="stylesheet" href="../timeline.css">
-<script src="../bower_components/jquery/dist/jquery.js"></script>
-<script src="../bower_components/moment/moment.js"></script>
-<script src="../bower_components/underscore/underscore.js"></script>
-<script src="../bower_components/angularjs/angular.js"></script>
+<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+<script src="../bower_components/moment/min/moment-with-locales.min.js"></script>
+<script src="../bower_components/underscore/underscore-min.js"></script>
+<script src="../bower_components/angular/angular.min.js"></script>
+<script src="../bower_components/angular-touch/angular-touch.min.js"></script>
+<script src="../bower_components/hamsterjs/hamster.js"></script>
+<script src="../bower_components/angular-mousewheel/mousewheel.js"></script>
 <script src="../module.js"></script>
 <script src="../service.js"></script>
 <script src="../filters.js"></script>
 <script src="../timeline-directive.js"></script>
+<script src="../timeline-controller.js"></script>
 <script src="../timeline-items-directive.js"></script>
 <script>
 (function (angular) {
 	'use strict';
 
 	angular.module('demo', ['err.timeline'])
-		.controller('demoController', demoController)
-		;
+		.controller('demoController', demoController);
 
 	function demoController($scope) {
 		$scope.model = {

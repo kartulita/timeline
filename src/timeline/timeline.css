@@ -85,9 +85,6 @@
 	white-space: nowrap;
 	overflow: hidden;
 	z-index: 1;
-	/* Animation smoothing */
-	transition: transform 100ms linear;
-	left: 0;
 }
 
 .timeline-day {

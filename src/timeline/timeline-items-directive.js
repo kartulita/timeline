@@ -2,8 +2,7 @@
 	'use strict';
 	
 	angular.module('err.timeline')		
-		.directive('timelineItems', timelineItemsDirective)
-		;
+		.directive('timelineItems', timelineItemsDirective);
 
 	function timelineItemsDirective($parse) {
 
@@ -18,7 +17,7 @@
 		function link(scope, element, attrs, ctrl, transclude) {
 			var rowCount = 2;
 			var parent = element.parent();
-			var navController = parent.controller('timelineNavController');
+			var navController = parent.controller('timelineWidgetController');
 
 			attrs.$observe('timelineItems', rebuildList);
 			scope.$watch('model.currentId', rebuildList);

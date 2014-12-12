@@ -6,10 +6,11 @@
 	 * @name err.timeline
 	 * @requires underscore
 	 * @requires moment
+	 * @requires ngTouch
 	 *
 	 * @description
 	 * Timeline widget
 	 */
-	angular.module('err.timeline', []);
+	angular.module('err.timeline', ['ngTouch', 'monospaced.mousewheel']);
 
 })(window.angular);

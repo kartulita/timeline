@@ -1,16 +1,25 @@
-<div class="widget timeline-widget">
+<div class="widget timeline-widget"
+	ondragstart="return false;" ondrop="return false;"
+	msd-wheel="methods.wheel($deltaX || $deltaY)"
+	ng-swipe-left="methods.prev()" ng-swipe-right="methods.next()">
 	<a href="#" class="timeline-nav prev" ng-click="methods.prev()"></a>
 	<a href="#" class="timeline-nav next" ng-click="methods.next()"></a>
 	<div class="timeline-days"
-		ng-style="{ transform: ('translateX(' + -view.offset + 'px)') }">
+		ng-style="{ transform: 'translateX(' + -view.offset + 'px)' }">
 		<div class="timeline-day" ng-repeat="day in model.days">
-			<div class="timeline-day-title" ng-bind="day.start | timelineDate"></div>
+			<div class="timeline-day-title"
+				ng-bind="day.start | timelineDate"></div>
 				<div class="timeline-items" timeline-items="item in day.items">
-					<div class="timeline-item-container" ng-class="{ current: item.id === model.currentId }">
-						<a class="timeline-item" href="#" ng-click="openItem(item)">
+					<div class="timeline-item-container"
+						ng-class="{ current: item.id === model.currentId }"
+						ng-swipe-left="methods.prev()" ng-swipe-right="methods.next()">
+						<a class="timeline-item" href="#"
+							ng-click="openItem(item)">
 							<div class="timeline-item-header">
-								<div class="timeline-item-time" ng-bind="item.start | timelineTime"></div>
-								<div class="timeline-item-title" ng-bind="item.title"></div>
+								<div class="timeline-item-time"
+									ng-bind="item.start | timelineTime"></div>
+								<div class="timeline-item-title"
+									ng-bind="item.title"></div>
 							</div>
 						</a>
 					</div>
