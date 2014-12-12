@@ -5,19 +5,22 @@
 		.factory('showsService', showsService);
 
 	var mock = [
-		{ id: 1, title: 'Terevisioon', start: moment().subtract(1, 'hours') },
-		{ id: 2, title: 'Spooks', start: moment().subtract(1, 'minutes') },
-		{ id: 3, title: 'Suur Arbuus', start: moment().add(1, 'hours') }
+		{ id: 0, title: 'Søørømøø', start: moment().subtract(45, 'minutes') },
+		{ id: 1, title: 'Terevisioon', start: moment().subtract(30, 'minutes') },
+		{ id: 2, title: 'Spooks', start: moment().subtract(15, 'minutes') },
+		{ id: 3, title: 'Suur Arbuus', start: moment().add(15, 'minutes') }
 	];
 
 	for (var id = 4; id < 50; id++) {
 		mock.push(
 			{ id: id, title: 'Future show #' + id, start: moment().add(id, 'hours') });
 	}
-	for (var id = -30; id < 0; id++) {
+	for (var id = -10; id < 0; id++) {
 		mock.push(
-			{ id: id, title: 'Past show #' + -id, start: moment().subtract(id + 1, 'hours') });
+			{ id: id, title: 'Past show #' + -id, start: moment().subtract(-id + 1, 'hours') });
 	}
+
+	mock = _(mock).sortBy('start');
 
 	function showsService($http, $q) {
 		return {
@@ -30,6 +33,7 @@
 		}
 
 		function getCurrent() {
+			/* Assumes data is in ascending order by start time */
 			return _(mock)
 				.reduceRight(function (memo, item) {
 					if (memo !== undefined) {

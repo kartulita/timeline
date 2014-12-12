@@ -6,7 +6,7 @@
 		<div class="timeline-day" ng-repeat="day in model.days">
 			<div class="timeline-day-title" ng-bind="day.start | timelineDate"></div>
 				<div class="timeline-items" timeline-items="item in day.items">
-					<div class="timeline-item-container">
+					<div class="timeline-item-container" ng-class="{ current: item.id === model.currentId }">
 						<a class="timeline-item" href="#" ng-click="openItem(item)">
 							<div class="timeline-item-header">
 								<div class="timeline-item-time" ng-bind="item.start | timelineTime"></div>

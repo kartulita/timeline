@@ -127,6 +127,11 @@
 	width: 144px;
 }
 
+.timeline-item-container.current {
+	width: 296px;
+	height: 296px;
+}
+
 .timeline-item {
 	position: relative;
 	display: block;
@@ -153,9 +158,9 @@
 	transition-delay: 400ms;
 }
 
-.timeline-item-header>* {
-	text-overflow: ellipsis;
-	white-space: nowrap;
+.current .timeline-item-header {
+	height: 296px;
+	bottom: -270px;
 }
 
 .timeline-item:hover>.timeline-item-header {
@@ -163,6 +168,11 @@
 	padding-top: 100px;
 	transition-delay: 300ms;
 	background: rgba(234,41,122,0.9);
+}
+
+.timeline-item-header>* {
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .timeline-item:hover>.timeline-item-header>* {

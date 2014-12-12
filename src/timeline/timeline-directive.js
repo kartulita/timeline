@@ -77,11 +77,12 @@
 			showsService.getDay(NaN)
 				.then(transformShowsData);
 				
-			$scope.model.activeId = showsService.getCurrent();
+			$scope.model.currentId = showsService.getCurrent().id;
 
 			return;
 
 			function transformShowsData(shows) {
+				/* Assumes data is in ascending order by start time */
 				$scope.model.days = _(shows).chain()
 					.groupBy(function getDay(item) {
 						return moment(item.start).local().startOf('day').toDate().getTime();
