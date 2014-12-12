@@ -155,7 +155,6 @@
 				stopAnimation();
 			}
 			$scope.view.offset = current;
-			console.info(current, target);
 		}
 
 		function changeScreen(delta) {
