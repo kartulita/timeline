@@ -107,6 +107,7 @@
 		}
 
 		function setOffset(offset, immediate) {
+			offset = Math.round(offset);
 			if (immediate) {
 				$scope.view.offset = offset;
 			} else {
@@ -149,7 +150,9 @@
 			var current = getOffset(true);
 			var direction = target === current ? 0 : target > current ? +1 : -1;
 			var delta = (target - current) * speed;
-			current += delta * dt;
+			/* Fixes anti-aliasing issues and prevents "sluggish" appearance */
+			delta = delta < 0 ? Math.floor(delta) : Math.ceil(delta);
+			current += dt * delta;
 			/* Crossed or reached target */
 			if ((target - current) * direction <= 0) {
 				current = target;

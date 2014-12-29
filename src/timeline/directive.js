@@ -4,14 +4,14 @@
 	angular.module('battlesnake.timeline')
 		.directive('timeline', timelineDirective);
 
-	function timelineDirective($window) {
+	function timelineDirective($window, timelineTemplate) {
 		return {
 			restrict: 'A',
 			scope: {
 				source: '@timeline'
 			},
 			controller: 'timelineController',
-			templateUrl: '../timeline.html',
+			template: timelineTemplate,
 			link: link
 		};
 
