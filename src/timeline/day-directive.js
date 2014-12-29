@@ -80,5 +80,3 @@
 	}
 
 })(window.angular, window._, window.moment);
-
-

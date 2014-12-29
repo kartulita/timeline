@@ -65,5 +65,12 @@ body {
 	<!-- factory is found in the associated script (etv-api.js)              -->
 	<div timeline="ETV" style="margin-top: 60px;"></div>
 	<!-- That's all there is to it! -->
+	<p style="margin: 2em auto 1em; max-width: 600px; line-height: 1.7em;">
+		<strong>NOTE:</strong> Since we are using the err.ee api from outside the
+		err.ee domain, your browser will block the XHRs due to CORS. To disable
+		CORS in chrome or chromium, launch it with the
+		<b>--disable-web-security</b> command-line parameter. The demos will not
+		work otherwise. There is no reliable way to disable CORS in Firefox.
+	</p>
 </body>
 </html>

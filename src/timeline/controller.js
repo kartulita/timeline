@@ -69,10 +69,6 @@
 
 		return;
 
-		function getDayTitle(date) {
-			return date.local().format('dddd DD.MM');
-		}
-
 		function prevScreen() {
 			changeScreen(-1);
 		}

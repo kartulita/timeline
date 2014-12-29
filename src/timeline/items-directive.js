@@ -1,4 +1,4 @@
-(function (angular, _, moment) {
+(function (angular) {
 	'use strict';
 	
 	angular.module('battlesnake.timeline')		
@@ -72,9 +72,6 @@
 
 				return;
 
-				function startRow() {
-				}
-
 				function newRow() {
 					rows = 0;
 				}
@@ -117,4 +114,4 @@
 		}
 	}
 
-})(window.angular, window._, window.moment);
+})(window.angular);
