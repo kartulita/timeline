@@ -11,7 +11,9 @@
  *             timeline-item
  */
 
-@import 'bower_components/fontawesome/css/font-awesome.css';
+/* Requires fontawesome */
+/* CSS include: @import 'bower_components/fontawesome/css/font-awesome.css'; */
+/* HTML include: <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome/css"> */
 
 .timeline-widget {
 	box-sizing: border-box;

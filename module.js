@@ -7,6 +7,9 @@
 	 * @requires underscore
 	 * @requires moment
 	 * @requires ngTouch
+	 * @requires monospaced.mousewheel
+	 * @requires fontawesome
+	 * @requires jquery
 	 *
 	 * @description
 	 * Timeline widget
