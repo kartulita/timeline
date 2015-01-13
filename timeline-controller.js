@@ -60,6 +60,9 @@
 			if (!$scope.view.reference) {
 				$scope.view.reference = element;
 			}
+			if (!$scope.model.current || !$scope.model.current.length) {
+				$scope.model.current = api.getCurrent();
+			}
 			$timeout(function () {
 				$scope.view.origin = $scope.view.reference ?
 					$scope.view.reference.position().left : 0;

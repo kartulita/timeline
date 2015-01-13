@@ -38,7 +38,7 @@
 				/*
 				 * We get adjacent days and filter to ensure that day groups
 				 * correspond to the local time-zone.  Since the front-end
-				 * service caches day daya, this won't result in redundant
+				 * service caches day data, this won't result in redundant
 				 * requests to the back-end, and also serves to pre-load
 				 * adjacent days if not already loaded.
 				 */

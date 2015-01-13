@@ -6,7 +6,7 @@
 
 	/*
 	 * Use the "timeline" attribute directive to specify the source to use
-	 * Example source in demos/etv-api.js
+	 * Example source in demos/etv-adapter.js
 	 */
 	function showsService($http, $q, $injector) {
 
@@ -66,11 +66,18 @@
 			function getCurrent() {
 				/* Assumes data is in ascending order by start time */
 				var now = moment();
-				return _(cache).first(function (day) {
-					return _(day).first(function (item) {
-						return item.start.isBefore(now);
+				var result;
+				_(cache).find(function (day) {
+					return _(day).find(function (item) {
+						if (item.start.isBefore(now)) {
+							result = item;
+							return false;
+						} else {
+							return true;
+						}
 					});
 				});
+				return result;
 			}
 		}
 	}
