@@ -172,13 +172,16 @@
 	background: rgba(234,41,122,0.9);
 }
 
-.timeline-item-header>* {
+.timeline-item-header .timeline-item-title {
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	overflow: hidden;
 }
 
-.timeline-item:hover>.timeline-item-header>* {
+.timeline-item-header:hover .timeline-item-title {
+	text-overflow: clip;
 	white-space: normal;
+	overflow: visible;
 }
 
 .timeline-item-time {
