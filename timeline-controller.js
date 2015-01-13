@@ -1,6 +1,6 @@
 (function (angular, _, moment) {
 	'use strict';
-	
+
 	angular.module('battlesnake.timeline')
 		.controller('timelineController', timelineController);
 
@@ -169,7 +169,7 @@
 			if (offset > max) {
 				offset = max;
 				loadFutureDay();
-			} 
+			}
 			if (offset < min) {
 				offset = min;
 				loadPastDay();

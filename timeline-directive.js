@@ -1,6 +1,6 @@
 (function (angular) {
 	'use strict';
-	
+
 	angular.module('battlesnake.timeline')
 		.directive('timeline', timelineDirective);
 
@@ -37,5 +37,5 @@
 			}
 		}
 	}
-		
+
 })(window.angular);

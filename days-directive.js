@@ -1,7 +1,7 @@
 (function (angular, _) {
 	'use strict';
-	
-	angular.module('battlesnake.timeline')		
+
+	angular.module('battlesnake.timeline')
 		.directive('timelineDays', timelineDaysDirective);
 
 	function timelineDaysDirective($parse) {

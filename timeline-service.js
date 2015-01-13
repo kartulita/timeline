@@ -13,7 +13,7 @@
 		var sources = {};
 
 		return getSource;
-		
+
 		function getSource(name) {
 			if (!_(sources).has(name)) {
 				var api = $injector.get(name + 'TimelineAPI');
@@ -52,7 +52,7 @@
 					})
 					.then(transformData)
 					.then(cacheData);
-				
+
 				function transformData(res) {
 					return _(res.data).map(api.mapItem);
 				}

@@ -1,7 +1,7 @@
 (function (angular) {
 	'use strict';
-	
-	angular.module('battlesnake.timeline')		
+
+	angular.module('battlesnake.timeline')
 		.directive('timelineItems', timelineItemsDirective);
 
 	function timelineItemsDirective($parse) {
@@ -28,7 +28,7 @@
 			scope.$watch(source, rebuildList);
 
 			scope.isCurrent = isCurrent;
-			
+
 			return;
 
 			/* Returns true if the given item is the currently-playing item */
