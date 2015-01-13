@@ -8,7 +8,8 @@
 		return {
 			restrict: 'A',
 			scope: {
-				source: '@timeline'
+				source: '@timeline',
+				onOpenItem: '&timelineOpenItem',
 			},
 			controller: 'timelineController',
 			template: timelineTemplate,

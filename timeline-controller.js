@@ -90,8 +90,10 @@
 			changeScreen(+1);
 		}
 
-		function wheelHandler(delta) {
+		function wheelHandler(event, delta) {
 			changeScreen(-delta / 2);
+			event.stopPropagation();
+			event.preventDefault();
 		}
 
 		function revalidateView() {
@@ -191,6 +193,7 @@
 		}
 
 		function openItem(item) {
+			$scope.onOpenItem({ item: item });
 		}
 	}
 

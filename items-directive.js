@@ -24,18 +24,12 @@
 			}
 			var local = matches[1];
 			var source = matches[2];
-			scope.$watch('model.current', rebuildList);
+			if (attrs.current) {
+				scope.$watch(attrs.current, rebuildList);
+			}
 			scope.$watch(source, rebuildList);
 
-			scope.isCurrent = isCurrent;
-
 			return;
-
-			/* Returns true if the given item is the currently-playing item */
-			function isCurrent(item) {
-				var current = scope.model.current;
-				return current && item.id === current.id;
-			};
 
 			/* Rebuild the view */
 			function rebuildList() {
@@ -115,8 +109,9 @@
 				}
 
 				/* Low-level: add item */
-				function addItem(item, isCurrent) {
-					if (isCurrent) {
+				function addItem(item) {
+					var current = item === scope.model.current;
+					if (current) {
 						newRow();
 					}
 					var itemScope = scope.$new();
@@ -124,7 +119,7 @@
 					transclude(itemScope, function (clone, scope) {
 						addToRow(clone);
 					});
-					if (isCurrent) {
+					if (current) {
 						newRow();
 					}
 				}
