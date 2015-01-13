@@ -11,7 +11,7 @@
 		'	<div class="timeline-days" ng-style="{ transform: \'translateX(\' + -(view.offset + view.origin) + \'px)\' }" timeline-days="day in model.days">',
 		'		<div class="timeline-day" timeline-day="items in day">',
 		'			<div class="timeline-day-title" ng-bind="day | timelineDate"></div>',
-		'				<div class="timeline-items" timeline-items="item in items">',
+		'				<div class="timeline-items" timeline-items="item in items" items-per-row="2">',
 		'					<div class="timeline-item-container" ng-class="{ current: isCurrent(item) }"',
 		'						ng-swipe-left="methods.prev()" ng-swipe-right="methods.next()">',
 		'						<a class="timeline-item" href="#" ng-click="openItem(item)">',

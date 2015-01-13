@@ -15,7 +15,8 @@
 		};
 
 		function link(scope, element, attrs, ctrl, transclude) {
-			var rowCount = 2;
+			/* The CSS currently does not support more than two items per row */
+			var rowCount = attrs.itemsPerRow || 2;
 
 			var matches = attrs.timelineItems.match(itemsParser);
 			if (!matches) {
@@ -26,72 +27,94 @@
 			scope.$watch('model.current', rebuildList);
 			scope.$watch(source, rebuildList);
 
-			scope.isCurrent = function (item) {
+			scope.isCurrent = isCurrent;
+			
+			return;
+
+			/* Returns true if the given item is the currently-playing item */
+			function isCurrent(item) {
 				var current = scope.model.current;
 				return current && item.id === current.id;
 			};
 
-			return;
-
+			/* Rebuild the view */
 			function rebuildList() {
 				var items = $parse(source)(scope);
-				element.empty();
 
-				var tuple;
+				var columnElement;
 				var rows;
+				var currentIndex = getCurrentIndex();
+
+				element.empty();
 				newRow();
-
-				var currentIndex = -1;
-
-				var i;
-
-				/* Get index of currently active item */
-				for (var i = 0; i < items.length; i++) {
-					if (items[i].id === scope.model.currentId) {
-						currentIndex = i;
-						break;
-					}
-				}
-
-				/*
-				 * Prepend a phantom if currently-active item is a second-row
-				 * item, so we don't have gaps next to the currently-active item
-				 */
-				if (currentIndex !== -1 && currentIndex & 1) {
-					addPhantom();
-				}
-
-				/* Add items */
-				for (var i = 0; i < items.length; i++) {
-					addItem(items[i], i === currentIndex);
-				}
-
-				while (rows !== 0) {
-					addPhantom();
-				}
+				prependPhantoms();
+				addItems();
 
 				return;
 
+				/* Get index of currently playing item (or -1 if none found) */
+				function getCurrentIndex() {
+					if (!scope.model.current) {
+						return -1;
+					}
+					for (var i = 0; i < items.length; i++) {
+						if (items[i].id === scope.model.current.id) {
+							return i;
+							break;
+						}
+					}
+					return -1;
+				}
+
+				/*
+				 * Prepend a phantom if currently-active item is not a first-row
+				 * item, so we don't have gaps next to the currently-active item
+				 */
+				function prependPhantoms() {
+					var phantoms = currentIndex === -1 ? 0 : currentIndex % rowCount;
+					while (phantoms--) {
+						addPhantom();
+					}
+				}
+
+				/* Add items */
+				function addItems() {
+					for (var i = 0; i < items.length; i++) {
+						addItem(items[i], i === currentIndex);
+					}
+				}
+
+				/* Fill last row with phantoms */
+				function appendPhantoms() {
+					while (rows !== 0) {
+						addPhantom();
+					}
+				}
+
+				/* Low-level: start new column */
 				function newRow() {
 					rows = 0;
 				}
 
+				/* Low-level: Move to next row, wrap if needed */
 				function nextRow() {
 					if (++rows >= rowCount) {
 						newRow();
 					}
 				}
 
+				/* Low-level: add to row, create new column element if needed */
 				function addToRow(item) {
 					if (rows === 0) {
-						tuple = angular.element('<div/>')
+						columnElement = angular.element('<div/>')
 							.addClass('timeline-items-column');
-						element.append(tuple);
+						element.append(columnElement);
 					}
-					tuple.append(item);
+					columnElement.append(item);
 					nextRow();
 				}
 
+				/* Low-level: add item */
 				function addItem(item, isCurrent) {
 					if (isCurrent) {
 						newRow();
@@ -106,6 +129,7 @@
 					}
 				}
 
+				/* Low-level: add phantom */
 				function addPhantom() {
 					var item = angular.element('<div class="timeline-item-container phantom"/>');
 					addToRow(item);

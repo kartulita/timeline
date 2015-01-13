@@ -38,20 +38,24 @@
 				/*
 				 * We get adjacent days and filter to ensure that day groups
 				 * correspond to the local time-zone.  Since the front-end
-				 * service caches days, this won't result in extra requests to
-				 * the back-end.
+				 * service caches day daya, this won't result in redundant
+				 * requests to the back-end, and also serves to pre-load
+				 * adjacent days if not already loaded.
 				 */
-				$q.all(
-					[
-						day.clone().subtract(1, 'day'),
-						day,
-						day.clone().add(1, 'day')
-					].map(api.getDay))
+				var days = [
+					day.clone().subtract(1, 'day'),
+					day,
+					day.clone().add(1, 'day')
+				];
+				/* Map days to promises and process result */
+				$q.all(days.map(api.getDay))
 					.then(transformDays)
 					.then(storeToScope)
-					.finally(function () {
+					.finally(emitLoadedEvent);
+
+				function emitLoadedEvent() {
 					scope.$emit('loaded', element);
-				});
+				}
 
 				function transformDays(data) {
 					return _([].concat.apply([], data))
