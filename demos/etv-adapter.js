@@ -43,7 +43,9 @@
 				/* Address of image to display in timeline */
 				thumbnail: getThumbnailUrl(item),
 				/* Address of larger image (not used yet) */
-				image: getImageUrl(item)
+				image: getImageUrl(item),
+				/* Store original item data for viewer */
+				itemData: item
 			};
 
 			function getThumbnailUrl(item) {

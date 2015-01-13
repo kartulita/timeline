@@ -49,15 +49,15 @@
 				];
 				/* Map days to promises and process result */
 				$q.all(days.map(api.getDay))
-					.then(transformDays)
-					.then(storeToScope)
+					.then(filterToday)
+					.then(createChildren)
 					.finally(emitLoadedEvent);
 
 				function emitLoadedEvent() {
 					scope.$emit('loaded', element);
 				}
 
-				function transformDays(data) {
+				function filterToday(data) {
 					return _([].concat.apply([], data))
 						.filter(isToday);
 
@@ -67,7 +67,7 @@
 					}
 				}
 
-				function storeToScope(data) {
+				function createChildren(data) {
 					var first = !itemScope;
 					if (first) {
 						itemScope = scope.$new();
