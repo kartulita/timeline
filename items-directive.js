@@ -28,8 +28,14 @@
 				scope.$watch(attrs.current, rebuildList);
 			}
 			scope.$watch(source, rebuildList);
+			scope.isCurrent = isCurrent;
 
 			return;
+
+			/* Do not compare by reference, it may not survive a list rebuild. */
+			function isCurrent(item) {
+				return scope.model.current && item.start.unix() === scope.model.current.start.unix() && item.id === scope.model.current.id;
+			}
 
 			/* Rebuild the view */
 			function rebuildList() {
@@ -53,7 +59,7 @@
 						return -1;
 					}
 					for (var i = 0; i < items.length; i++) {
-						if (items[i].id === scope.model.current.id) {
+						if (isCurrent(items[i])) {
 							return i;
 						}
 					}
