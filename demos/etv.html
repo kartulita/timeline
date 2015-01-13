@@ -47,9 +47,9 @@
 
 })(window.angular);
 </script>
-<!-- This script defines the API for getting timeline data from the server   -->
-<!-- It defines a factory called "ETVTimelineAPI".  Examine the script to    -->
-<!-- see how to define your own APIs                                         -->
+<!-- This script defines the adapter for getting timeline data from the      -->
+<!-- server.  It defines a factory called "ETVTimelineAdapter".  Examine the -->
+<!-- script to see how to define your own adapters                           -->
 <script src="etv-adapter.js"></script>
 <style>
 body {
@@ -60,10 +60,10 @@ body {
 </head>
 <body ng-app="demo" ng-controller="demoController">
 	<h1 ng-bind="model.title"></h1>
-	<!-- The "timeline" attribute specifies the name of the factory          -->
-	<!-- that provides the API to use.  The provided name has "TimelineAPI"  -->
+	<!-- The "timeline" attribute specifies the name of the factory that     -->
+	<!-- provides the adapter to use.  The provided name has TimelineAdapter -->
 	<!-- appended to it, to produce the name of the factory.  This example   -->
-	<!-- factory is found in the associated script (etv-api.js)              -->
+	<!-- factory is found in the associated script (etv-adapter.js)          -->
 	<div timeline="ETV" style="margin-top: 60px;"></div>
 	<!-- That's all there is to it! -->
 	<p style="margin: 2em auto 1em; max-width: 600px; line-height: 1.7em;">
