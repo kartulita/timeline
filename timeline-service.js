@@ -16,7 +16,7 @@
 
 		function getSource(name) {
 			if (!_(sources).has(name)) {
-				var api = $injector.get(name + 'TimelineAPI');
+				var api = $injector.get(name + 'TimelineAdapter');
 				sources[name] = {
 					api: api,
 					cache: {}

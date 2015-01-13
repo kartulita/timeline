@@ -49,6 +49,7 @@
 				newRow();
 				prependPhantoms();
 				addItems();
+				appendPhantoms(); /* Not strictly necessary */
 
 				return;
 
@@ -60,7 +61,6 @@
 					for (var i = 0; i < items.length; i++) {
 						if (items[i].id === scope.model.current.id) {
 							return i;
-							break;
 						}
 					}
 					return -1;

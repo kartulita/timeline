@@ -15,10 +15,10 @@
 			/* Array of dates of days to display */
 			days: [today],
 			/* Currently active item */
-			current: api.getCurrent()
+			current: {}
 		};
 
-		/* View variables */
+		/* View variables (TODO: Move scrollbox logic to separate directive) */
 		$scope.view = {
 			/* X-coordinate of TODAY item (the reference frame for scrolling) */
 			origin: 0,
@@ -51,6 +51,7 @@
 		};
 
 		var daysLoading = 0;
+		var currentInterval;
 
 		$scope.$on('loading', function (event) {
 			daysLoading++;
@@ -60,9 +61,7 @@
 			if (!$scope.view.reference) {
 				$scope.view.reference = element;
 			}
-			if (!$scope.model.current || !$scope.model.current.length) {
-				$scope.model.current = api.getCurrent();
-			}
+			updateCurrent();
 			$timeout(function () {
 				$scope.view.origin = $scope.view.reference ?
 					$scope.view.reference.position().left : 0;
@@ -71,6 +70,17 @@
 		});
 
 		return;
+
+		function updateCurrent() {
+			if (!currentInterval) {
+				currentInterval = $interval(updateCurrent, 60000);
+				$scope.$on('$destroy', function () {
+					$interval.cancel(currentInterval);
+					currentInterval = null;
+				});
+			}
+			$scope.model.current = api.getCurrent();
+		}
 
 		function prevScreen() {
 			changeScreen(-1);

@@ -2,7 +2,7 @@
 	'use strict';
 
 	/*
-	 * Define a *TimelineAPI factory in your application then tell the timeline
+	 * Define a *TimelineAdapter factory in your application then tell the timeline
 	 * to use it by setting the value of the timeline attribute to *.
 	 *
 	 * The API endpoint takes the following format:
@@ -20,9 +20,9 @@
 	 * For chrome/chromium: --disable-web-security
 	 */
 	angular.module('demo')
-		.factory('ETVTimelineAPI', ETVTimelineAPI);
+		.factory('ETVTimelineAdapter', ETVTimelineAdapter);
 
-	function ETVTimelineAPI() {
+	function ETVTimelineAdapter() {
 
 		return {
 			/* URL to get timeline items per day */
