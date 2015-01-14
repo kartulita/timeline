@@ -64,20 +64,16 @@
 			}
 
 			function getCurrent() {
-				/* Assumes data is in ascending order by start time */
 				var now = moment();
-				var result;
-				_(cache).find(function (day) {
-					return _(day).find(function (item) {
-						if (item.start.isBefore(now)) {
-							result = item;
-							return false;
-						} else {
-							return true;
-						}
-					});
-				});
-				return result;
+				return _.find(
+					[].concat.apply([], _(cache).values())
+						.sort(function (a, b) {
+							return b.start.unix() - a.start.unix();
+						}),
+					function (item) {
+						return item.start.isBefore(now);
+					}
+				);
 			}
 		}
 	}
