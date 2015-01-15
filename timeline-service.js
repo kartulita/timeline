@@ -2,29 +2,23 @@
 	'use strict';
 
 	angular.module('battlesnake.timeline')
-		.factory('showsService', showsService);
+		.factory('timelineService', timelineService);
 
 	/*
 	 * Use the "timeline" attribute directive to specify the source to use
 	 * Example source in demos/etv-adapter.js
 	 */
-	function showsService($http, $q, $injector) {
+	function timelineService($http) {
 
-		var sources = {};
+		return {
+			connect: connect
+		};
 
-		return getSource;
-
-		function getSource(name) {
-			if (!_(sources).has(name)) {
-				var api = $injector.get(name + 'TimelineAdapter');
-				sources[name] = {
-					api: api,
-					cache: {}
-				};
-			}
-
-			var source = sources[name];
-			var api = source.api;
+		function connect(adapter) {
+			var source = {
+				adapter: adapter,
+				cache: {}
+			};
 			var cache = source.cache;
 
 			return {
@@ -43,7 +37,7 @@
 				return $http(
 					{
 						method: 'GET',
-						url: api.endpoint,
+						url: adapter.endpoint,
 						params: {
 							year: day.format('YYYY'),
 							month: day.format('MM'),
@@ -54,7 +48,7 @@
 					.then(cacheData);
 
 				function transformData(res) {
-					return _(res.data).map(api.mapItem);
+					return _(res.data).map(adapter.mapItem);
 				}
 
 				function cacheData(data) {

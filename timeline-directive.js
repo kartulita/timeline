@@ -4,11 +4,11 @@
 	angular.module('battlesnake.timeline')
 		.directive('timeline', timelineDirective);
 
-	function timelineDirective($window, timelineTemplate) {
+	function timelineDirective($window, timelineTemplate, timelineService) {
 		return {
 			restrict: 'A',
 			scope: {
-				source: '@timeline',
+				adapter: '=timeline',
 				onOpenItem: '&timelineOpenItem',
 			},
 			controller: 'timelineController',
@@ -27,7 +27,18 @@
 
 			scope.methods.revalidateView();
 
+			scope.$watch('adapter', adapterChanged);
+
 			return;
+
+			function adapterChanged() {
+				if (scope.adapter) {
+					scope.api = timelineService.connect(scope.adapter);
+				} else {
+					scope.api = null;
+				}
+			}
+
 
 			function getPageWidth() {
 				return element.innerWidth();

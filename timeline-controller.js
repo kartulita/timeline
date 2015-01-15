@@ -4,11 +4,9 @@
 	angular.module('battlesnake.timeline')
 		.controller('timelineController', timelineController);
 
-	function timelineController($scope, $timeout, $interval, showsService) {
+	function timelineController($scope, $timeout, $interval) {
 
 		var today = moment().local().startOf('day');
-
-		var api = showsService($scope.source);
 
 		/* View-model */
 		$scope.model = {
@@ -79,7 +77,7 @@
 					currentInterval = null;
 				});
 			}
-			$scope.model.current = api.getCurrent();
+			$scope.model.current = $scope.api.getCurrent();
 		}
 
 		function prevScreen() {

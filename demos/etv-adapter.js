@@ -21,20 +21,24 @@
 	 */
 	angular.module('demo')
 		.value('ETVEndpoint', 'http://etv.err.ee/api/loader')
-		.factory('ETVTimelineAdapter', ETVTimelineAdapter)
+		.value('R2Endpoint', 'http://r2.err.ee/api/loader')
+		.factory('ERRTimelineAdapterFactory', ERRTimelineAdapterFactory)
 		;
 
-	function ETVTimelineAdapter(ETVEndpoint) {
+	function ERRTimelineAdapterFactory() {
 
-		return {
-			/* URL to get timeline items per day */
-			endpoint: ETVEndpoint + '/GetTimelineDay',
-			/* Applied to each retrieved item to map it to the view's format */
-			mapItem: mapItem
+		return getAdapter;
+		
+		function getAdapter(endpoint) {
+			return {
+				/* URL to get timeline items per day */
+				endpoint: endpoint + '/GetTimelineDay',
+				/* Applied to each retrieved item to map it to the view's format */
+				mapItem: mapItem
+			};
 		};
 
 		function mapItem(item) {
-
 			return {
 				/* Unique ID of item */
 				id: item.Id,
@@ -54,12 +58,12 @@
 
 			function getThumbnailUrl(item) {
 				return 'http://static.err.ee/gridfs/' + item.Image +
-					'?width=300&height=300&mode=crop&quality=25';
+					'?width=360&height=360&mode=crop&quality=25';
 			}
 
 			function getImageUrl(item) {
 				return 'http://static.err.ee/gridfs/' + item.Image +
-					'?width=600&height=600&mode=crop&quality=75';
+					'?width=750&height=750&mode=crop&quality=75';
 			}
 		}
 	}

@@ -4,7 +4,7 @@
 	angular.module('battlesnake.timeline')
 		.directive('timelineDay', timelineDayDirective);
 
-	function timelineDayDirective($parse, $q, showsService) {
+	function timelineDayDirective($parse, $q) {
 
 		var itemsParser = /^\s*(\S+?)\s+in\s+(.*?)\s*$/;
 
@@ -16,8 +16,6 @@
 		};
 
 		function link(scope, element, attrs, ctrl, transclude) {
-
-			var api = showsService(scope.source);
 
 			scope.$watch(attrs.day, reloadDay);
 
@@ -33,6 +31,9 @@
 			return;
 
 			function reloadDay() {
+				if (!scope.api) {
+					return;
+				}
 				var day = moment($parse(source)(scope)).clone().local().startOf('day');
 				scope.$emit('loading');
 				/*
@@ -48,7 +49,7 @@
 					day.clone().add(1, 'day')
 				];
 				/* Map days to promises and process result */
-				$q.all(days.map(api.getDay))
+				$q.all(days.map(scope.api.getDay))
 					.then(filterToday)
 					.then(createChildren)
 					.finally(emitLoadedEvent);

@@ -45,10 +45,15 @@
 	angular.module('demo', ['battlesnake.timeline', 'ui.slider'])
 		.controller('demoController', demoController);
 
-	function demoController($scope) {
+	function demoController($scope, ERRTimelineAdapterFactory, ETVEndpoint, R2Endpoint) {
 		$scope.model = {
-			title: 'Timeline demo'
+			title: 'Timeline demo',
+			adapter: null
 		};
+		$scope.adapters = [
+			{ name: 'ETV', adapter: ERRTimelineAdapterFactory(ETVEndpoint) },
+			{ name: 'R2', adapter: ERRTimelineAdapterFactory(R2Endpoint) }
+		];
 		$scope.less = {
 			itemSize: 18,
 			itemSpacing: 1,
@@ -58,6 +63,9 @@
 		};
 		$scope.colors = ['#ea297a', '#3b97a4', '#f58537', '#f7931e', '#ba1e1e', '#3b4257', '#353e43'];
 		$scope.$watch('less', refreshLess, true);
+		$scope.model.adapter = $scope.adapters[0].adapter;
+		return;
+
 		function refreshLess() {
 			var vars = _($scope.less).chain()
 				.map(function (v, k) {
@@ -105,11 +113,8 @@ h1 {
 </head>
 <body ng-app="demo" ng-controller="demoController">
 	<h1 ng-bind="model.title"></h1>
-	<!-- The "timeline" attribute specifies the name of the factory that     -->
-	<!-- provides the adapter to use.  The provided name has TimelineAdapter -->
-	<!-- appended to it, to produce the name of the factory.  This example   -->
-	<!-- factory is found in the associated script (etv-adapter.js)          -->
-	<div timeline="ETV" class="kartulita"></div>
+	<!-- Here it is! -->
+	<div timeline="model.adapter" class="kartulita"></div>
 	<!-- That's all there is to it!  Here are the slider controls            -->
 	<div style="margin: 60px auto; max-width: 600px;" class="form">
 		<label>Tile size
