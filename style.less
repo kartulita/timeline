@@ -242,15 +242,19 @@
 
 .timeline-item-states {
 	z-index: 50;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
 
 	.playable {
 		position: absolute;
+		top: 8px;
+		left: 8px;
 	}
 
-	.now-playing {
+	.current {
 		position: absolute;
-		top: -8px;
-		left: -8px;
 		background-color: @base-color;
 		color: white;
 		padding: 8px;
@@ -264,6 +268,39 @@
 		}
 	}
 
+	.now-playing {
+		position: absolute;
+		top: 0;
+		right: 0;
+		background-color: @base-color;
+		color: white;
+		padding: 10px 10px 8px;
+		width: @current-item-size / 2;
+		box-sizing: border-box;
+		overflow: hidden;
+		.marqueeeeeeee {
+			display: block;
+			width: @current-item-size;
+			-webkit-animation: marqueeeeeeee 5s linear infinite;
+			animation: marqueeeeeeee 5s linear infinite;
+			&>* {
+				float: left;
+				display: block;
+				width: @current-item-size / 2;
+			}
+		}
+	}
+
 }
 
+}
+
+/* CSS3 marquee for now-playing */
+@-webkit-keyframes marqueeeeeeee {
+	from { -webkit-transform: translate(0, 0); }
+	to { -webkit-transform: translate(-@current-item-size / 2, 0); }
+}
+@keyframes marqueeeeeeee {
+	from { transform: translate(0, 0); }
+	to { transform: translate(-@current-item-size / 2, 0); }
 }
