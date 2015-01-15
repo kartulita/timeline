@@ -4,7 +4,7 @@
 	angular.module('battlesnake.timeline')
 		.directive('timeline', timelineDirective);
 
-	function timelineDirective($window, timelineTemplate, timelineService) {
+	function timelineDirective($window, timelineTemplate, timelineService, $compile) {
 		return {
 			restrict: 'A',
 			scope: {
@@ -37,8 +37,8 @@
 				} else {
 					scope.api = null;
 				}
+				scope.model.reset();
 			}
-
 
 			function getPageWidth() {
 				return element.innerWidth();

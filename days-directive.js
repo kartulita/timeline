@@ -19,7 +19,7 @@
 			/* Parse days specification */
 			var matches = attrs.timelineDays.match(itemsParser);
 			if (!matches) {
-				throw new Error('timeline-day expression is not in the form of "<name> in <collection>"');
+				throw new Error('timeline-days expression is not in the form of "<name> in <collection>"');
 			}
 			var local = matches[1];
 			var source = matches[2];
@@ -30,6 +30,14 @@
 			return;
 
 			function updateDays() {
+				/* If adapter has changed, elements will need to be removed */
+				_(daysElements).chain().clone().each(function (line, key) {
+					if (line.generation < scope.model.resetCount) {
+						delete daysElements[key];
+						line.element.remove();
+					}
+				});
+				/* Update elements */
 				var days = $parse(source)(scope);
 				_(days).each(createDayElement);
 			}
@@ -66,6 +74,7 @@
 				} else {
 					cacheLine = {
 						serial: day.toDate().getTime(),
+						generation: scope.model.resetCount,
 						element: null
 					};
 					daysElements[key] = cacheLine;

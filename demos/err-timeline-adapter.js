@@ -2,9 +2,6 @@
 	'use strict';
 
 	/*
-	 * Define a *TimelineAdapter factory in your application then tell the timeline
-	 * to use it by setting the value of the timeline attribute to *.
-	 *
 	 * The API endpoint takes the following format:
 	 *
 	 * GET endpoint?year=YYYY&month=MM&day=DD
@@ -20,10 +17,7 @@
 	 * For chrome/chromium: --disable-web-security
 	 */
 	angular.module('demo')
-		.value('ETVEndpoint', 'http://etv.err.ee/api/loader')
-		.value('R2Endpoint', 'http://r2.err.ee/api/loader')
-		.factory('ERRTimelineAdapterFactory', ERRTimelineAdapterFactory)
-		;
+		.factory('ERRTimelineAdapterFactory', ERRTimelineAdapterFactory);
 
 	function ERRTimelineAdapterFactory() {
 
@@ -36,7 +30,7 @@
 				/* Applied to each retrieved item to map it to the view's format */
 				mapItem: mapItem
 			};
-		};
+		}
 
 		function mapItem(item) {
 			return {

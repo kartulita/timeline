@@ -6,28 +6,10 @@
 
 	function timelineController($scope, $timeout, $interval) {
 
-		var today = moment().local().startOf('day');
-
-		/* View-model */
 		$scope.model = {
-			/* Array of dates of days to display */
-			days: [today],
-			/* Currently active item */
-			current: {}
-		};
-
-		/* View variables (TODO: Move scrollbox logic to separate directive) */
-		$scope.view = {
-			/* X-coordinate of TODAY item (the reference frame for scrolling) */
-			origin: 0,
-			/* Current scroll offset (relative to TODAY item) */
-			offset: 0,
-			/* Target scroll offset (offset animates towards this value) */
-			targetOffset: 0,
-			/* Timer used for animating offset */
-			scrollTimer: null,
-			/* Reference element */
-			reference: null
+			/* Reset the model */
+			reset: resetModel,
+			resetCount: 0
 		};
 
 		/* Methods callable by the view */
@@ -51,6 +33,8 @@
 		var daysLoading = 0;
 		var currentInterval;
 
+		$scope.model.reset();
+
 		$scope.$on('loading', function (event) {
 			daysLoading++;
 		});
@@ -68,6 +52,32 @@
 		});
 
 		return;
+
+		function resetModel() {
+
+			/* Array of dates of days to display */
+			var today = moment().local().startOf('day');
+			$scope.model.days = [today];
+			/* Currently active item */
+			$scope.model.current = null;
+
+			$scope.model.resetCount++;
+
+			/* View variables (TODO: Move scrollbox logic to separate directive) */
+			$scope.view = {
+				/* X-coordinate of TODAY item (the reference frame for scrolling) */
+				origin: 0,
+				/* Current scroll offset (relative to TODAY item) */
+				offset: 0,
+				/* Target scroll offset (offset animates towards this value) */
+				targetOffset: 0,
+				/* Timer used for animating offset */
+				scrollTimer: null,
+				/* Reference element */
+				reference: null
+			};
+
+		}
 
 		function updateCurrent() {
 			if (!currentInterval) {
