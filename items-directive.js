@@ -32,9 +32,19 @@
 
 			return;
 
-			/* Do not compare by reference, it may not survive a list rebuild. */
 			function isCurrent(item) {
-				return scope.model.current && item.start.unix() === scope.model.current.start.unix() && item.id === scope.model.current.id;
+				return sameItemFuzzy(item, scope.model.current);
+			}
+
+			function isNowPlaying(item) {
+				return sameItemFuzzy(item, scope.model.nowPlaying);
+			}
+
+			/* Do not depend on reference equality */
+			function sameItemFuzzy(a, b) {
+				return a === b || (a && b &&
+					a.start.unix() === b.start.unix() &&
+					a.id == b.id);
 			}
 
 			/* Rebuild the view */

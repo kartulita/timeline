@@ -20,13 +20,15 @@
 	 * For chrome/chromium: --disable-web-security
 	 */
 	angular.module('demo')
-		.factory('ETVTimelineAdapter', ETVTimelineAdapter);
+		.value('ETVEndpoint', 'http://etv.err.ee/api/loader')
+		.factory('ETVTimelineAdapter', ETVTimelineAdapter)
+		;
 
-	function ETVTimelineAdapter() {
+	function ETVTimelineAdapter(ETVEndpoint) {
 
 		return {
 			/* URL to get timeline items per day */
-			endpoint: 'http://etv.err.ee/api/loader/GetTimelineDay',
+			endpoint: ETVEndpoint + '/GetTimelineDay',
 			/* Applied to each retrieved item to map it to the view's format */
 			mapItem: mapItem
 		};
@@ -45,7 +47,9 @@
 				/* Address of larger image (not used yet) */
 				image: getImageUrl(item),
 				/* Store original item data for viewer */
-				itemData: item
+				itemData: item,
+				/* Item can be played */
+				playable: item.hasAudio || item.hasVideo
 			};
 
 			function getThumbnailUrl(item) {

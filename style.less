@@ -44,6 +44,7 @@
 @column-height: @row-count * (@item-size + @item-spacing) - @item-spacing;
 @current-item-size: @column-height;
 
+/* Namespace so we don't clash with the old timeline */
 .kartulita {
 
 .timeline-widget {
@@ -60,7 +61,6 @@
 	padding: @widget-padding-top 16px @widget-padding-bottom;
 	color: white;
 	font-family: Abel, sans-serif;
-	text-rendering: optimizeLegibility;
 	font-weight: normal;
 	line-height: 1;
 	font-style: normal;
@@ -165,6 +165,10 @@
 	&.current {
 		width: @current-item-size;
 		height: @current-item-size;
+		& .timeline-item-header {
+			height: @current-item-size;
+			bottom: 26px - @current-item-size;
+		}
 	}
 }
 
@@ -180,6 +184,17 @@
 	&.phantom {
 		visibility: hidden;
 	}
+	&:hover .timeline-item-header {
+		bottom: -13px;
+		padding-top: 100px;
+		transition-delay: 300ms;
+		background: rgba(234,41,122,0.9);
+		.timeline-item-title {
+			text-overflow: clip;
+			white-space: normal;
+			overflow: visible;
+		}
+	}
 }
 
 .timeline-item-header {
@@ -192,46 +207,24 @@
 	bottom: (27px - @item-size);
 	transition: all 400ms ease-in-out;
 	transition-delay: 400ms;
-	z-index: 50;
-}
+	z-index: 100;
+	.timeline-item-title {
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		overflow: hidden;
+		font-size: 14px;
+		line-height: 18px;
+		margin-top: -3px;
+		padding: 0 4px 4px;
+		font-weight: bold;
+	}
 
-.timeline-item.current .timeline-item-header {
-	height: @current-item-size;
-	bottom: (26px - @current-item-size);
-}
-
-.timeline-item:hover .timeline-item-header {
-	bottom: -13px;
-	padding-top: 100px;
-	transition-delay: 300ms;
-	background: rgba(234,41,122,0.9);
-}
-
-.timeline-item-header .timeline-item-title {
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	overflow: hidden;
-}
-
-.timeline-item-header:hover .timeline-item-title {
-	text-overflow: clip;
-	white-space: normal;
-	overflow: visible;
-}
-
-.timeline-item-time {
-	font-size: 10px;
-	line-height: 16px;
-	margin-top: -6px;
-	padding: 0 4px;
-}
-
-.timeline-item-title {
-	font-size: 14px;
-	line-height: 18px;
-	margin-top: -3px;
-	padding: 0 4px 4px;
-	font-weight: bold;
+	.timeline-item-time {
+		font-size: 10px;
+		line-height: 16px;
+		margin-top: -6px;
+		padding: 0 4px;
+	}
 }
 
 .timeline-item-thumbnail {
@@ -245,6 +238,32 @@
 	padding: 0;
 	margin: 0;
 	z-index: 10;
+}
+
+.timeline-item-states {
+	z-index: 50;
+
+	.playable {
+		position: absolute;
+	}
+
+	.now-playing {
+		position: absolute;
+		top: -8px;
+		left: -8px;
+		background-color: @base-color;
+		color: white;
+		padding: 8px;
+		.media-icon {
+			vertical-align: middle;
+			margin-top: -5px;
+			margin-right: 6px;
+			font-size: 22px;
+			box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
+			float: none;
+		}
+	}
+
 }
 
 }
