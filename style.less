@@ -15,22 +15,53 @@
 /* CSS include: @import 'bower_components/fontawesome/css/font-awesome.css'; */
 /* HTML include: <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome/css"> */
 
+/* Background color of container */
+@background-color: #3b4257;
+
+/* Base color for theme */
+@base-color: #ea297a;
+
+/* Darker version of base-color */
+@dark-color: darken(@base-color, 12);
+
+/* Size of tile */
+@item-size: 144px;
+
+/* Item spacing */
+@item-spacing: 16px;
+
+/* Items per row (must correspond to value in timelineItems directive) */
+@row-count: 2;
+
+/* Padding in main container */
+@widget-padding-top: 16px;
+@widget-padding-bottom: 32px;
+
+/* Horizontal spacing between days */
+@day-spacing: 10px;
+
+/* Calculated stuff */
+@column-height: @row-count * (@item-size + @item-spacing) - @item-spacing;
+@current-item-size: @column-height;
+
+.kartulita {
+
 .timeline-widget {
 	box-sizing: border-box;
 	position: relative;
 	display: block;
 	overflow-x: hidden;
 	overflow-y: hidden;
-	background: #3b4257;
+	background: @background-color;
 	border: 0;
-	border-top: 3px solid #ea297a;
-	height: 380px;
+	border-top: 3px solid @base-color;
+	height: @column-height + @widget-padding-top + @widget-padding-bottom + 36px;
 	width: 100%;
-	padding: 16px 16px 32px;
+	padding: @widget-padding-top 16px @widget-padding-bottom;
 	color: white;
 	font-family: Abel, sans-serif;
 	text-rendering: optimizeLegibility;
-	font-weight normal;
+	font-weight: normal;
 	line-height: 1;
 	font-style: normal;
 	text-decoration: none;
@@ -44,7 +75,7 @@
 .timeline-nav {
 	position: absolute;
 	display: block;
-	background: #ea297a;
+	background: @base-color;
 	color: white;
 	speak: none;
 	font-family: FontAwesome;
@@ -56,30 +87,29 @@
 	margin-top: -49px;
 	transition: background 800ms ease;
 	z-index: 1000;
-}
 
-.timeline-nav:hover {
-	background: #bb2665;
-	color: white;
-	transition: none;
-}
+	&:hover {
+		background: @dark-color;
+		color: white;
+		transition: none;
+	}
 
-.timeline-nav.prev {
-	left: 0;
-}
+	&.prev {
+		left: 0;
+		&:before {
+			content: '\f104';
+			text-align: right;
+		}
+	}
 
-.timeline-nav.prev:before {
-	content: '\f104';
-	text-align: right;
-}
 
-.timeline-nav.next {
-	right: 0;
-}
-
-.timeline-nav.next:before {
-	content: '\f105';
-	text-align: left;
+	&.next {
+		right: 0;
+		&:before {
+			content: '\f105';
+			text-align: left;
+		}
+	}
 }
 
 .timeline-days {
@@ -92,7 +122,7 @@
 
 .timeline-day {
 	display: inline-block;
-	margin: 0 10px 0;
+	margin: 0 @day-spacing 0;
 }
 
 .timeline-day-title {
@@ -110,26 +140,32 @@
 	 * use a simple [ display: flex; flex-flow: column wrap ] here
 	 */
 	overflow: hidden;
-	height: 304px;
+	height: @column-height;
 }
 
 .timeline-items-column {
 	display: inline-block;
-	margin: -8px 8px -8px 0;
 	vertical-align: top;
+	margin-top: -@item-spacing;
+	margin-bottom: -@item-spacing;
+	margin-left: 0;
+	margin-right: @item-spacing;
+	&:last-child {
+		margin-right: 0;
+	}
 }
 
 .timeline-item-container {
 	box-sizing: border-box;
 	display: block;
-	margin: 8px 0;
-	height: 144px;
-	width: 144px;
-}
-
-.timeline-item-container.current {
-	width: 296px;
-	height: 296px;
+	margin-top: @item-spacing;
+	margin-bottom: @item-spacing;
+	height: @item-size;
+	width: @item-size;
+	&.current {
+		width: @current-item-size;
+		height: @current-item-size;
+	}
 }
 
 .timeline-item {
@@ -141,10 +177,9 @@
 	background: rgba(0,0,0,0.3);
 	/* Originally wrote this for wireframing, but it looks nice on final too */
 	/* border: 1px solid rgba(255,255,255,0.3); */
-}
-
-.timeline-item.phantom {
-	visibility: hidden;
+	&.phantom {
+		visibility: hidden;
+	}
 }
 
 .timeline-item-header {
@@ -153,19 +188,19 @@
 	position: absolute;
 	left: 0;
 	right: 0;
-	height: 144px;
-	bottom: -117px;
+	height: @item-size;
+	bottom: (27px - @item-size);
 	transition: all 400ms ease-in-out;
 	transition-delay: 400ms;
 	z-index: 50;
 }
 
-.current .timeline-item-header {
-	height: 296px;
-	bottom: -270px;
+.timeline-item.current .timeline-item-header {
+	height: @current-item-size;
+	bottom: (26px - @current-item-size);
 }
 
-.timeline-item:hover>.timeline-item-header {
+.timeline-item:hover .timeline-item-header {
 	bottom: -13px;
 	padding-top: 100px;
 	transition-delay: 300ms;
@@ -210,4 +245,6 @@
 	padding: 0;
 	margin: 0;
 	z-index: 10;
+}
+
 }

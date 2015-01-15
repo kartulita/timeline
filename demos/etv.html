@@ -6,9 +6,9 @@
 <!-- CSS for the timeline.  Inspired by the CSS for the previous timeline,   -->
 <!-- but otherwise a total re-write.                                         -->
 <link rel="stylesheet" href="../bower_components/fontawesome/css/font-awesome.css">
-<link rel="stylesheet" href="../style.css">
-<!-- Dependencies (remember to `bower install` in the module folder before   -->
-<!-- running this demo                                                       -->
+<link rel="stylesheet/less" href="../style.less" type="text/css">
+<!-- Dependencies for the demo (remember to `bower install` in the module    -->
+<!-- folder before running this demo                                         -->
 <script src="../bower_components/jquery/dist/jquery.min.js"></script>
 <script src="../bower_components/moment/min/moment-with-locales.min.js"></script>
 <script src="../bower_components/underscore/underscore-min.js"></script>
@@ -16,6 +16,11 @@
 <script src="../bower_components/angular-touch/angular-touch.min.js"></script>
 <script src="../bower_components/hamsterjs/hamster.js"></script>
 <script src="../bower_components/angular-mousewheel/mousewheel.js"></script>
+<!-- jQuery UI used for demo to provide slider controls                      -->
+<script src="../bower_components/less/dist/less.min.js"></script>
+<link rel="stylesheet" href="../bower_components/jquery-ui/themes/smoothness/jquery-ui.css">
+<script src="../bower_components/jquery-ui/jquery-ui.min.js"></script>
+<script src="../bower_components/angular-ui-slider/src/slider.js"></script>
 <!-- For debugging purposes, I include each script explicitly.               -->
 <!-- In production, you would ng-annotate=>concatenate=>uglify the scripts   -->
 <!-- to produce one small bundle script                                      -->
@@ -32,20 +37,41 @@
 <!-- reference the battlesnake.timeline module, so that our timeline         -->
 <!-- directive is recognised.                                                -->
 <script>
-(function (angular) {
+(function (angular, less) {
 	'use strict';
 
 	/* Remember to add 'battlesnake.timeline' to your module's dependencies */
-	angular.module('demo', ['battlesnake.timeline'])
+	angular.module('demo', ['battlesnake.timeline', 'ui.slider'])
 		.controller('demoController', demoController);
 
 	function demoController($scope) {
 		$scope.model = {
 			title: 'Timeline demo'
 		};
+		$scope.less = {
+			itemSize: 18,
+			itemSpacing: 1,
+			daySpacing: 1,
+			baseColor: '#ea297a',
+			backgroundColor: '#3b4257'
+		};
+		$scope.colors = ['#ea297a', '#3b97a4', '#f58537', '#f7931e', '#ba1e1e', '#3b4257', '#353e43'];
+		$scope.$watch('less', refreshLess, true);
+		function refreshLess() {
+			var vars = _($scope.less).chain()
+				.map(function (v, k) {
+					return [
+						k.replace(/[A-Z]/g, function (c) { return '-' + c.toLowerCase(); }),
+						typeof v === 'number' ? v*8 + 'px' : v
+					];
+				})
+				.object()
+				.value();
+			less.modifyVars(vars);
+		}
 	}
 
-})(window.angular);
+})(window.angular, window.less);
 </script>
 <!-- This script defines the adapter for getting timeline data from the      -->
 <!-- server.  It defines a factory called "ETVTimelineAdapter".  Examine the -->
@@ -56,6 +82,24 @@ body {
 	font-family: sans-serif;
 	margin: 60px;
 }
+h1 {
+	margin-bottom: 60px;
+}
+.form>label {
+	display: block;
+	margin: 8px 0 16px;
+}
+.color-pad {
+	width: 64px;
+	height: 64px;
+	margin: 4px;
+	display: inline-block;
+	vertical-align: top;
+	transition: transform 200ms ease;
+}
+.color-pad.selected {
+	transform: rotate(95deg);
+}
 </style>
 </head>
 <body ng-app="demo" ng-controller="demoController">
@@ -64,8 +108,25 @@ body {
 	<!-- provides the adapter to use.  The provided name has TimelineAdapter -->
 	<!-- appended to it, to produce the name of the factory.  This example   -->
 	<!-- factory is found in the associated script (etv-adapter.js)          -->
-	<div timeline="ETV" style="margin-top: 60px;"></div>
-	<!-- That's all there is to it! -->
+	<div timeline="ETV" class="kartulita"></div>
+	<!-- That's all there is to it!  Here are the slider controls            -->
+	<div style="margin: 60px auto; max-width: 600px;" class="form">
+		<label>Tile size
+			<div min="8" max="40" ng-model="less.itemSize" ui-slider></div>
+		</label>
+		<label>Tile spacing
+			<div min="1" max="4" ng-model="less.itemSpacing" ui-slider></div>
+		</label>
+		<label>Day spacing
+			<div min="0" max="4" ng-model="less.daySpacing" ui-slider></div>
+		</label>
+		<label>Background colour<br/>
+			<div class="color-pad" ng-repeat="color in colors" ng-style="{ 'background-color': color }" ng-click="less.backgroundColor = color" ng-class="{ selected: (less.backgroundColor === color) }"></div>
+		</label>
+		<label>Base colour<br/>
+			<div class="color-pad" ng-repeat="color in colors" ng-style="{ 'background-color': color }" ng-click="less.baseColor = color" ng-class="{ selected: (less.baseColor === color) }"></div>
+		</label>
+	</div>
 	<p style="margin: 2em auto 1em; max-width: 600px; line-height: 1.7em;">
 		<strong>NOTE:</strong> Since we are using the err.ee api from outside the
 		err.ee domain, your browser will block the XHRs due to CORS. To disable
