@@ -2,38 +2,39 @@
 <html lang="en">
 <head>
 <title>Timeline demo</title>
+<base href="../">
 <meta charset="utf8">
 <link href="http://etv.err.ee/Content/less/theme/etv/bootstrap.less" rel="stylesheet">
 <!-- CSS for the timeline.  Inspired by the CSS for the previous timeline,   -->
 <!-- but otherwise a total re-write.                                         -->
-<link rel="stylesheet" href="../bower_components/fontawesome/css/font-awesome.css">
-<link rel="stylesheet/less" href="../style.less" type="text/css">
+<link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.css">
+<link rel="stylesheet/less" href="style.less" type="text/css">
 <!-- Dependencies for the demo (remember to `bower install` in the module    -->
 <!-- folder before running this demo                                         -->
-<script src="../bower_components/jquery/dist/jquery.min.js"></script>
-<script src="../bower_components/moment/min/moment-with-locales.min.js"></script>
-<script src="../bower_components/underscore/underscore-min.js"></script>
-<script src="../bower_components/angular/angular.min.js"></script>
-<script src="../bower_components/angular-touch/angular-touch.min.js"></script>
-<script src="../bower_components/hamsterjs/hamster.js"></script>
-<script src="../bower_components/angular-mousewheel/mousewheel.js"></script>
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/moment/min/moment-with-locales.min.js"></script>
+<script src="bower_components/underscore/underscore-min.js"></script>
+<script src="bower_components/angular/angular.min.js"></script>
+<script src="bower_components/angular-touch/angular-touch.min.js"></script>
+<script src="bower_components/hamsterjs/hamster.js"></script>
+<script src="bower_components/angular-mousewheel/mousewheel.js"></script>
 <!-- jQuery UI used for demo to provide slider controls                      -->
-<script src="../bower_components/less/dist/less.min.js"></script>
-<link rel="stylesheet" href="../bower_components/jquery-ui/themes/smoothness/jquery-ui.css">
-<script src="../bower_components/jquery-ui/jquery-ui.min.js"></script>
-<script src="../bower_components/angular-ui-slider/src/slider.js"></script>
+<script src="bower_components/less/dist/less.min.js"></script>
+<link rel="stylesheet" href="bower_components/jquery-ui/themes/smoothness/jquery-ui.css">
+<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
+<script src="bower_components/angular-ui-slider/src/slider.js"></script>
 <!-- For debugging purposes, I include each script explicitly.               -->
 <!-- In production, you would ng-annotate=>concatenate=>uglify the scripts   -->
 <!-- to produce one small bundle script                                      -->
-<script src="../module.js"></script>
-<script src="../timeline-service.js"></script>
-<script src="../timeline-filters.js"></script>
-<script src="../timeline-template.js"></script>
-<script src="../timeline-controller.js"></script>
-<script src="../timeline-directive.js"></script>
-<script src="../days-directive.js"></script>
-<script src="../day-directive.js"></script>
-<script src="../items-directive.js"></script>
+<script src="module.js"></script>
+<script src="timeline-template.html" type="text/ng-template"></script>
+<script src="timeline-service.js"></script>
+<script src="timeline-filters.js"></script>
+<script src="timeline-controller.js"></script>
+<script src="timeline-directive.js"></script>
+<script src="days-directive.js"></script>
+<script src="day-directive.js"></script>
+<script src="items-directive.js"></script>
 <!-- This script defines our angular application.  Its main purpose is to    -->
 <!-- reference the battlesnake.timeline module, so that our timeline         -->
 <!-- directive is recognised.                                                -->
@@ -82,8 +83,8 @@
 
 })(window.angular, window.less);
 </script>
-<script src="err-endpoints.js"></script>
-<script src="err-timeline-adapter.js"></script>
+<script src="demos/err-endpoints.js"></script>
+<script src="demos/err-timeline-adapter.js"></script>
 <style>
 body {
 	font-family: sans-serif;

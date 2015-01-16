@@ -4,7 +4,7 @@
 	angular.module('battlesnake.timeline')
 		.directive('timeline', timelineDirective);
 
-	function timelineDirective($window, timelineTemplate, timelineService, $compile) {
+	function timelineDirective(timelineService, $window) {
 		return {
 			restrict: 'A',
 			scope: {
@@ -12,7 +12,7 @@
 				onOpenItem: '&timelineOpenItem',
 			},
 			controller: 'timelineController',
-			template: timelineTemplate,
+			templateUrl: 'timeline-template.html',
 			link: link
 		};
 

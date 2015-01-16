@@ -1,0 +1,49 @@
+<div class="widget timeline-widget"
+	ondragstart="return false;" ondrop="return false;"
+	msd-wheel="methods.wheel($event, $deltaX || $deltaY)"
+	ng-swipe-left="methods.next()" ng-swipe-right="methods.prev()">
+	<a href="javascript://" class="timeline-nav prev" ng-click="methods.prev()"></a>
+	<a href="javascript://" class="timeline-nav next" ng-click="methods.next()"></a>
+	<div class="timeline-days"
+		ng-style="{ transform: 'translateX(' + -(view.offset + view.origin) + 'px)' }"
+		timeline-days="day in model.days">
+		<div class="timeline-day" timeline-day="items in day">
+			<div class="timeline-day-title" ng-bind="day | timelineDate"></div>
+				<div class="timeline-items" timeline-items="item in items"
+					items-per-row="2"
+					current="model.current">
+					<div class="timeline-item-container"
+						ng-class="{ current: isCurrent(item) }"
+						ng-swipe-left="methods.prev()"
+						ng-swipe-right="methods.next()">
+						<a class="timeline-item" href="javascript://" ng-click="methods.openItem(item)">
+							<img ng-src="{{item.thumbnail}}" alt="{{item.title}}"
+								class="timeline-item-thumbnail">
+							<div class="media-icons timeline-item-states">
+								<div class="playable media-icon icomoon-play"
+									ng-if="item.playable && !isCurrent(item)"></div>
+								<div class="current" ng-if="isCurrent(item)">
+									<span class="media-icon icomoon-play"></span>
+									Vaata otse
+								</div>
+								<div class="now-playing"
+									ng-if="isCurrent(item) && model.nowPlaying">
+									<div class="marqueeeeeeee">
+										<span ng-bind="model.nowPlaying"></span>
+										<span ng-bind="model.nowPlaying"></span>
+									</div>
+								</div>
+							</div>
+							<div class="timeline-item-header">
+								<div class="timeline-item-time"
+									ng-bind="item.start | timelineTime"></div>
+								<div class="timeline-item-title"
+									ng-bind="item.title"></div>
+							</div>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
