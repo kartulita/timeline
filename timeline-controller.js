@@ -54,6 +54,7 @@
 
 		var daysLoading = 0;
 		var currentInterval;
+		var screensPerWheelDelta = 0.2;
 
 		$scope.$on('adapterChanged', function () { resetModel(); });
 		$scope.$on('dayLoading', dayLoading);
@@ -186,7 +187,7 @@
 		}
 
 		function wheelHandler(event, delta) {
-			changeScreen(-delta / 2);
+			changeScreen(-delta * screensPerWheelDelta);
 			event.stopPropagation();
 			event.preventDefault();
 		}

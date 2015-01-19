@@ -21,7 +21,7 @@
 		timeline-days="day in model.days">
 		<!-- Day -->
 		<div class="timeline-day" timeline-day="items in day">
-			<div class="timeline-day-title" ng-bind="day | timelineDate"></div>
+			<div class="timeline-day-title" bind-once="day | timelineDate"></div>
 				<!-- Items -->
 				<div class="timeline-items" timeline-items="item in items"
 					items-per-row="2"
@@ -32,7 +32,7 @@
 						ng-swipe-right="methods.next()">
 						<!-- Item -->
 						<a class="timeline-item" href="javascript://" ng-click="methods.openItem(item)">
-							<img ng-src="{{item.thumbnail}}" alt="{{item.title}}"
+							<img ng-src="{{::item.thumbnail}}" alt="{{::item.title}}"
 								class="timeline-item-thumbnail">
 							<div class="media-icons timeline-item-states">
 								<!-- Playable -->
@@ -45,7 +45,7 @@
 								</div>
 								<!-- Currently playing media is... -->
 								<div class="now-playing"
-									ng-if="isCurrent(item) && nowPlaying">
+									ng-if="nowPlaying && isCurrent(item)">
 									<!-- CSS3 marquee has crap browser support so we use a hack instead -->
 									<div class="marqueeeeeeee" ng-if="nowPlaying.length < 20">
 										<span ng-bind="nowPlaying"></span>
@@ -59,9 +59,9 @@
 							<!-- Hover-over info -->
 							<div class="timeline-item-header">
 								<div class="timeline-item-time"
-									ng-bind="item.start | timelineTime"></div>
+									bind-once="item.start | timelineTime"></div>
 								<div class="timeline-item-title"
-									ng-bind="item.title"></div>
+									bind-once="item.title"></div>
 							</div>
 						</a>
 					</div>

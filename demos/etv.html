@@ -25,6 +25,16 @@
 <script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
 <!-- jQuery UI used for demo to provide slider controls                      -->
 <script src="bower_components/angular-ui-slider/src/slider.js"></script>
+<!-- battlesnake.misc -->
+<script src="../misc/module.js"></script>
+<script src="../misc/bind-once-directive.js"></script>
+
+
+<script src="../misc/count-watchers.js"></script>
+
+
+
+
 <!-- For debugging purposes, I include each script explicitly.               -->
 <!-- In production, you would ng-annotate=>concatenate=>uglify the scripts   -->
 <!-- to produce one small bundle script                                      -->
@@ -49,6 +59,9 @@
 		.controller('demoController', demoController);
 
 	function demoController($scope, ERRTimelineAdapterFactory, ETVEndpoint, R2Endpoint) {
+
+		setInterval(countWatchers, 3000);
+
 		$scope.model = {
 			title: 'Timeline demo',
 			adapter: null,

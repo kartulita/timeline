@@ -17,7 +17,7 @@
 		};
 
 		function link(scope, element, attrs, controller, transclude) {
-			scope.$watch(attrs.day, reloadDay);
+			//scope.$watch(attrs.day, reloadDay);
 
 			var matches = attrs.timelineDay.match(itemsParser);
 			if (!matches) {
@@ -25,7 +25,8 @@
 			}
 			var local = matches[1];
 			var source = matches[2];
-			scope.$watch(source, reloadDay);
+			//scope.$watch(source, reloadDay);
+			reloadDay();
 
 			var itemsElement;
 			return;

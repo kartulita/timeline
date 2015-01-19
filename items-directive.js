@@ -26,9 +26,10 @@
 			var local = matches[1];
 			var source = matches[2];
 			if (attrs.current) {
-				scope.$watch(attrs.current, rebuildList);
+				//scope.$watch(attrs.current, rebuildList);
 			}
-			scope.$watch(source, rebuildList);
+			//scope.$watch(source, rebuildList);
+			rebuildList();
 			scope.isCurrent = isCurrent;
 
 			return;

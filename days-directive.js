@@ -37,6 +37,7 @@
 				_(daysElements).each(function (line, key) {
 					delete daysElements[key];
 					line.element.remove();
+					line.scope.$destroy();
 				});
 			}
 
@@ -51,14 +52,6 @@
 			}
 
 			function updateDays() {
-				/* If adapter has changed, elements will need to be removed */
-				_(daysElements).chain().clone().each(function (line, key) {
-					if (line.generation < scope.model.resetCount) {
-						delete daysElements[key];
-						line.element.remove();
-						line.scope.$destroy();
-					}
-				});
 				/* Update elements */
 				var days = $parse(source)(scope);
 				_(days).each(createDayElement);

@@ -30,6 +30,7 @@
 			angular.element($window)
 				.bind('resize', scope.methods.revalidateView);
 
+			/* Trigger loading of adjacent days */
 			scope.methods.revalidateView();
 
 			scope.$watch('adapter', adapterChanged);
@@ -37,6 +38,7 @@
 
 			return;
 
+			/* Adapter */
 			function adapterChanged() {
 				if (scope.adapter) {
 					scope.api = timelineService.connect(scope.adapter);
@@ -46,6 +48,7 @@
 				scope.$broadcast('adapterChanged');
 			}
 
+			/* Geometry */
 			function getPageWidth() {
 				return element.innerWidth();
 			}
@@ -54,6 +57,7 @@
 				return days.outerWidth(true);
 			}
 
+			/* Date-picker */
 			function openDatePicker($event) {
 				if (scope.view.isDatePickerOpening) {
 					closeDatePicker();
