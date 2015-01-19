@@ -6,9 +6,8 @@
 
 	/*
 	 * Use the "timeline" attribute directive to specify the source to use
-	 * Example source in demos/etv-adapter.js
 	 */
-	function timelineService($http) {
+	function timelineService() {
 
 		return {
 			connect: connect
@@ -34,23 +33,9 @@
 					return cache[key];
 				}
 				/* Get from backend */
-				return $http(
-					{
-						method: 'GET',
-						url: adapter.endpoint,
-						params: {
-							year: day.format('YYYY'),
-							month: day.format('MM'),
-							day: day.format('DD')
-						}
-					})
-					.then(transformData)
+				return adapter.getDay(day)
 					.then(cacheData)
 					.catch(cacheNothing);
-
-				function transformData(res) {
-					return _(res.data).map(adapter.mapItem);
-				}
 
 				function cacheData(data) {
 					cache[key] = data;

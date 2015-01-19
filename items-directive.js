@@ -37,10 +37,6 @@
 				return sameItemFuzzy(item, scope.model.current);
 			}
 
-			function isNowPlaying(item) {
-				return sameItemFuzzy(item, scope.model.nowPlaying);
-			}
-
 			/* Do not depend on reference equality */
 			function sameItemFuzzy(a, b) {
 				return a === b || (a && b &&

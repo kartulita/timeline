@@ -1,4 +1,4 @@
-(function (angular) {
+(function (angular, moment, _) {
 	'use strict';
 
 	/*
@@ -19,17 +19,37 @@
 	angular.module('demo')
 		.factory('ERRTimelineAdapterFactory', ERRTimelineAdapterFactory);
 
-	function ERRTimelineAdapterFactory() {
+	function ERRTimelineAdapterFactory($http) {
 
 		return getAdapter;
 		
 		function getAdapter(endpoint) {
-			return {
+			var result = {
 				/* URL to get timeline items per day */
-				endpoint: endpoint + '/GetTimelineDay',
-				/* Applied to each retrieved item to map it to the view's format */
-				mapItem: mapItem
+				endpoint: endpoint + '/loader/GetTimelineDay',
+				/* Get contents of a day */
+				getDay: getDay,
 			};
+			return result;
+
+			function getDay(day) {
+				day = moment(day);
+				var request = {
+					method: 'GET',
+					url: result.endpoint,
+					params: {
+						year: day.format('YYYY'),
+						month: day.format('MM'),
+						day: day.format('DD')
+					}
+				};
+				return $http(request)
+					.then(transformData);
+
+				function transformData(res) {
+					return _(res.data).map(mapItem);
+				}
+			}
 		}
 
 		function mapItem(item) {
@@ -62,4 +82,4 @@
 		}
 	}
 
-})(window.angular);
+})(window.angular, window.moment, window._);
