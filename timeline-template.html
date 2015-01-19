@@ -21,50 +21,45 @@
 		timeline-days="day in model.days">
 		<!-- Day -->
 		<div class="timeline-day" timeline-day="items in day">
-			<div class="timeline-day-title" bind-once="day | timelineDate"></div>
-				<!-- Items -->
-				<div class="timeline-items" timeline-items="item in items"
-					items-per-row="2"
-					current="model.current">
-					<div class="timeline-item-container"
-						ng-class="{ current: isCurrent(item) }"
-						ng-swipe-left="methods.prev()"
-						ng-swipe-right="methods.next()">
-						<!-- Item -->
-						<a class="timeline-item" href="javascript://" ng-click="methods.openItem(item)">
-							<img ng-src="{{::item.thumbnail}}" alt="{{::item.title}}"
-								class="timeline-item-thumbnail">
-							<div class="media-icons timeline-item-states">
-								<!-- Playable -->
-								<div class="playable media-icon icomoon-play"
-									ng-if="item.playable && !isCurrent(item)"></div>
-								<!-- Show is now playing -->
-								<div class="current" ng-if="isCurrent(item)">
-									<span class="media-icon icomoon-play"></span>
-									Vaata otse
-								</div>
-								<!-- Currently playing media is... -->
-								<div class="now-playing"
-									ng-if="nowPlaying && isCurrent(item)">
-									<!-- CSS3 marquee has crap browser support so we use a hack instead -->
-									<div class="marqueeeeeeee" ng-if="nowPlaying.length < 20">
-										<span ng-bind="nowPlaying"></span>
-										<span ng-bind="nowPlaying"></span>
-									</div>
-									<!-- Use old non-standard Microsoft marquee for long strings -->
-									<!-- It's supported by more browsers than the CSS3 marquee -->
-									<marquee ng-bind="nowPlaying" ng-if="nowPlaying.length >= 20"></marquee>
-								</div>
+			<div class="timeline-day-title">
+				{{ ::day | timelineDate }}
+			</div>
+			<!-- Items -->
+			<div class="timeline-items" timeline-items="item in items"
+				items-per-row="2" current="model.current">
+				<div class="timeline-item-container"
+					ng-class="{ current: isCurrent(item) }"
+					ng-swipe-left="methods.prev()"
+					ng-swipe-right="methods.next()">
+					<!-- Item -->
+					<a class="timeline-item" href="javascript://" ng-click="methods.openItem(item)">
+						<img ng-src="{{ ::item.thumbnail }}" alt="{{ ::item.title }}"
+							class="timeline-item-thumbnail">
+						<div class="media-icons timeline-item-states">
+							<!-- Playable -->
+							<div class="playable media-icon icomoon-play"
+								ng-if="item.playable && !isCurrent(item)"></div>
+							<!-- Show is now playing -->
+							<div class="current" ng-if="isCurrent(item)">
+								<span class="media-icon icomoon-play"></span>
+								Vaata otse
 							</div>
-							<!-- Hover-over info -->
-							<div class="timeline-item-header">
-								<div class="timeline-item-time"
-									bind-once="item.start | timelineTime"></div>
-								<div class="timeline-item-title"
-									bind-once="item.title"></div>
+							<!-- Currently playing media is... -->
+							<div class="now-playing"
+								ng-if="nowPlaying && isCurrent(item)">
+								<marquee ng-bind="nowPlaying"></marquee>
 							</div>
-						</a>
-					</div>
+						</div>
+						<!-- Hover-over info -->
+						<div class="timeline-item-header">
+							<div class="timeline-item-time">
+								{{ ::item.start | timelineTime }}
+							</div>
+							<div class="timeline-item-title">
+								{{ ::item.title }}
+							</div>
+						</div>
+					</a>
 				</div>
 			</div>
 		</div>

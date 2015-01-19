@@ -61,8 +61,8 @@
 
 				function emitFailedEvent() {
 					scope.$emit('dayLoadFailed', scope.key);
-					element.remove();
 					scope.$destroy();
+					element.remove();
 				}
 
 				function filterToday(data) {

@@ -330,29 +330,8 @@
 		width: @current-item-size / 2;
 		box-sizing: border-box;
 		overflow: hidden;
-		.marqueeeeeeee {
-			display: block;
-			width: @current-item-size;
-			-webkit-animation: marqueeeeeeee 5s linear infinite;
-			animation: marqueeeeeeee 5s linear infinite;
-			&>* {
-				float: left;
-				display: block;
-				width: @current-item-size / 2;
-			}
-		}
 	}
 
 }
 
-}
-
-/* CSS3 marquee for now-playing */
-@-webkit-keyframes marqueeeeeeee {
-	from { -webkit-transform: translate(0, 0); }
-	to { -webkit-transform: translate(-@current-item-size / 2, 0); }
-}
-@keyframes marqueeeeeeee {
-	from { transform: translate(0, 0); }
-	to { transform: translate(-@current-item-size / 2, 0); }
 }
