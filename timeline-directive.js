@@ -10,6 +10,7 @@
 			require: 'timeline',
 			scope: {
 				adapter: '=timeline',
+				nowPlaying: '=',
 				onOpenItem: '&timelineOpenItem',
 			},
 			controller: 'timelineController',

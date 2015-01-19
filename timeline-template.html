@@ -35,18 +35,25 @@
 							<img ng-src="{{item.thumbnail}}" alt="{{item.title}}"
 								class="timeline-item-thumbnail">
 							<div class="media-icons timeline-item-states">
+								<!-- Playable -->
 								<div class="playable media-icon icomoon-play"
 									ng-if="item.playable && !isCurrent(item)"></div>
+								<!-- Show is now playing -->
 								<div class="current" ng-if="isCurrent(item)">
 									<span class="media-icon icomoon-play"></span>
 									Vaata otse
 								</div>
+								<!-- Currently playing media is... -->
 								<div class="now-playing"
-									ng-if="isCurrent(item) && model.nowPlaying">
-									<div class="marqueeeeeeee">
-										<span ng-bind="model.nowPlaying"></span>
-										<span ng-bind="model.nowPlaying"></span>
+									ng-if="isCurrent(item) && nowPlaying">
+									<!-- CSS3 marquee has crap browser support so we use a hack instead -->
+									<div class="marqueeeeeeee" ng-if="nowPlaying.length < 20">
+										<span ng-bind="nowPlaying"></span>
+										<span ng-bind="nowPlaying"></span>
 									</div>
+									<!-- Use old non-standard Microsoft marquee for long strings -->
+									<!-- It's supported by more browsers than the CSS3 marquee -->
+									<marquee ng-bind="nowPlaying" ng-if="nowPlaying.length >= 20"></marquee>
 								</div>
 							</div>
 							<!-- Hover-over info -->

@@ -51,7 +51,8 @@
 	function demoController($scope, ERRTimelineAdapterFactory, ETVEndpoint, R2Endpoint) {
 		$scope.model = {
 			title: 'Timeline demo',
-			adapter: null
+			adapter: null,
+			nowPlaying: ''
 		};
 		$scope.adapters = [
 			{ name: 'ETV', adapter: ERRTimelineAdapterFactory(ETVEndpoint) },
@@ -115,9 +116,12 @@ h1 {
 <body ng-app="demo" ng-controller="demoController">
 	<h1 ng-bind="model.title"></h1>
 	<!-- Here it is! -->
-	<div timeline="model.adapter" class="kartulita"></div>
+	<div timeline="model.adapter" class="kartulita" now-playing="model.nowPlaying"></div>
 	<!-- That's all there is to it!  Here are the slider controls            -->
 	<div style="margin: 60px auto; max-width: 600px;" class="form">
+		<label>Now playing
+			<input type="text" class="form-control" ng-model="model.nowPlaying">
+		</label>
 		<label>Tile size
 			<div min="8" max="40" ng-model="less.itemSize" ui-slider></div>
 		</label>
