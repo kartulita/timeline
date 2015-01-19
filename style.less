@@ -112,6 +112,57 @@
 	}
 }
 
+.timeline-goto {
+	transition: width 150ms ease-out;
+	margin: 0;
+	line-height: 24px;
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	background: @base-color;
+	color: white;
+	speak: none;
+	box-sizing: content-box;
+	width: 40px;
+	height: 40px;
+	white-space: nowrap;
+	overflow: hidden;
+	z-index: 100;
+	.open-button:before {
+		font-family: FontAwesome;
+		font-weight: normal;
+		font-size: 24px;
+		line-height: 24px;
+		height: 24px;
+		width: 24px;
+		text-align: center;
+		content: '\f073';
+		display: block;
+		position: absolute;
+		left: 0px;
+		top: 0px;
+		padding: 8px;
+		box-sizing: content-box;
+	}	
+	&.open {
+		width: 130px;
+	}
+	.textbox {
+		position: absolute;
+		text-align: center;
+		top: 8px;
+		left: 40px;
+		height: 24px;
+		width: 82px;
+		padding: 2px;
+		box-sizing: border-box;
+		background: @base-color;
+		border: 1px solid white;
+		color: white;
+		outline: none;
+	}
+}
+
 .timeline-days {
 	display: inline-block;
 	position: relative;
@@ -208,6 +259,7 @@
 	transition: all 400ms ease-in-out;
 	transition-delay: 400ms;
 	z-index: 100;
+	box-sizing: content-box;
 	.timeline-item-title {
 		text-overflow: ellipsis;
 		white-space: nowrap;

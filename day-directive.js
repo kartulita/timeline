@@ -10,13 +10,13 @@
 
 		return {
 			restrict: 'A',
+			priority: 10,
 			transclude: true,
 			scope: true,
 			link: link
 		};
 
-		function link(scope, element, attrs, ctrl, transclude) {
-
+		function link(scope, element, attrs, controller, transclude) {
 			scope.$watch(attrs.day, reloadDay);
 
 			var matches = attrs.timelineDay.match(itemsParser);
@@ -27,7 +27,7 @@
 			var source = matches[2];
 			scope.$watch(source, reloadDay);
 
-			var itemScope;
+			var itemsElement;
 			return;
 
 			function reloadDay() {
@@ -35,7 +35,7 @@
 					return;
 				}
 				var day = moment($parse(source)(scope)).clone().local().startOf('day');
-				scope.$emit('loading');
+				scope.$emit('dayLoading');
 				/*
 				 * We get adjacent days and filter to ensure that day groups
 				 * correspond to the local time-zone.  Since the front-end
@@ -55,7 +55,13 @@
 					.finally(emitLoadedEvent);
 
 				function emitLoadedEvent() {
-					scope.$emit('loaded', element);
+					scope.$emit('dayLoaded', element);
+				}
+
+				function emitFailedEvent() {
+					scope.$emit('dayLoadFailed', scope.key);
+					element.remove();
+					scope.$destroy();
 				}
 
 				function filterToday(data) {
@@ -69,14 +75,19 @@
 				}
 
 				function createChildren(data) {
-					var first = !itemScope;
-					if (first) {
-						itemScope = scope.$new();
+					/*
+					 * If no data available, assume no data is available for
+					 * this day and notify the controller
+					 */
+					if (!data.length) {
+						emitFailedEvent();
+						return;
 					}
-					itemScope[local] = data;
-					if (first) {
-						transclude(itemScope, function (clone, scope) {
-							element.append(clone);
+					/* Store data and create subelements if needed */
+					scope[local] = data;
+					if (!itemsElement) {
+						transclude(scope, function (clone, scope) {
+							itemsElement = clone.appendTo(element);
 						});
 					}
 				}

@@ -17,6 +17,6 @@
 	 * @example
 	 * See demos/etv.html
 	 */
-	angular.module('battlesnake.timeline', ['ngTouch', 'monospaced.mousewheel']);
+	angular.module('battlesnake.timeline', ['ngTouch', 'monospaced.mousewheel', 'ui.bootstrap']);
 
 })(window.angular);

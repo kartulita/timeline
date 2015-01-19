@@ -45,7 +45,8 @@
 						}
 					})
 					.then(transformData)
-					.then(cacheData);
+					.then(cacheData)
+					.catch(cacheNothing);
 
 				function transformData(res) {
 					return _(res.data).map(adapter.mapItem);
@@ -54,6 +55,11 @@
 				function cacheData(data) {
 					cache[key] = data;
 					return data;
+				}
+
+				function cacheNothing() {
+					cache[key] = [];
+					return [];
 				}
 			}
 

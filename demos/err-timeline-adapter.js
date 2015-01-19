@@ -37,7 +37,7 @@
 				/* Unique ID of item */
 				id: item.Id,
 				/* Title of item */
-				title: item.HeaderLong,
+				title: item.HeaderLong || item.Header,
 				/* Start time */
 				start: moment(item.Published),
 				/* Address of image to display in timeline */

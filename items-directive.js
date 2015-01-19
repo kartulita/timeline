@@ -10,11 +10,12 @@
 
 		return {
 			restrict: 'A',
+			priority: 10,
 			transclude: true,
 			link: link
 		};
 
-		function link(scope, element, attrs, ctrl, transclude) {
+		function link(scope, element, attrs, controller, transclude) {
 			/* The CSS currently does not support more than two items per row */
 			var rowCount = attrs.itemsPerRow || 2;
 
