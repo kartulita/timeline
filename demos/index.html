@@ -5,27 +5,25 @@
 <base href="../">
 <meta charset="utf8">
 <link href="http://etv.err.ee/Content/less/theme/etv/bootstrap.less" rel="stylesheet">
-<!-- CSS for the timeline.  Inspired by the CSS for the previous timeline,   -->
-<!-- but otherwise a total re-write.                                         -->
+<!-- Dependencies -->
 <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.css">
-<link rel="stylesheet/less" href="style.less" type="text/css">
-<!-- Dependencies for the demo (remember to `bower install` in the module    -->
-<!-- folder before running this demo                                         -->
-<script src="bower_components/less/dist/less.min.js"></script>
+<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="bower_components/jquery-ui/themes/smoothness/jquery-ui.css">
 <script src="bower_components/jquery/dist/jquery.min.js"></script>
 <script src="bower_components/moment/min/moment-with-locales.min.js"></script>
 <script src="bower_components/underscore/underscore-min.js"></script>
 <script src="bower_components/angular/angular.min.js"></script>
 <script src="bower_components/angular-touch/angular-touch.min.js"></script>
 <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-<link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="bower_components/jquery-ui/themes/smoothness/jquery-ui.css">
-<!-- jQuery UI used for demo to provide slider controls                      -->
+<!-- jQuery UI needed for slider controls in this demo -->
 <script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
 <script src="bower_components/angular-ui-slider/src/slider.js"></script>
-<!-- For debugging purposes, I include each script explicitly.               -->
-<!-- In production, you would ng-annotate=>concatenate=>uglify the scripts   -->
-<!-- to produce one small bundle script                                      -->
+<!-- Apis -->
+<script src="../err/module.js"></script>
+<script src="../err/apis.js"></script>
+<script src="../err/timeline-adapter.js"></script>
+<!-- Timeline -->
+<link rel="stylesheet/less" href="style.less" type="text/css">
 <script src="module.js"></script>
 <script src="timeline-template.html" type="text/ng-template"></script>
 <script src="timeline-service.js"></script>
@@ -35,27 +33,26 @@
 <script src="days-directive.js"></script>
 <script src="day-directive.js"></script>
 <script src="items-directive.js"></script>
-<!-- This script defines our angular application.  Its main purpose is to    -->
-<!-- reference the battlesnake.timeline module, so that our timeline         -->
-<!-- directive is recognised.                                                -->
+<!-- Demo -->
 <script>
 (function (angular, less) {
 	'use strict';
 
-	/* Remember to add 'battlesnake.timeline' to your module's dependencies */
-	angular.module('demo', ['battlesnake.timeline', 'ui.slider'])
+	angular.module('demo', ['battlesnake.timeline', 'ui.slider', 'battlesnake.err'])
 		.controller('demoController', demoController);
 
-	function demoController($scope, ERRTimelineAdapterFactory, ETV_api, R2_api) {
+	function demoController($scope, timelineAdapterFactory, scheduleApi) {
+		$scope.adapters = _(scheduleApi).map(function (api, name) {
+			return {
+				name: name,
+				timeline: timelineAdapterFactory(api)
+			};
+		});
 		$scope.model = {
 			title: 'Timeline demo',
 			adapter: null,
 			nowPlaying: ''
 		};
-		$scope.adapters = [
-			{ name: 'ETV', adapter: ERRTimelineAdapterFactory(ETV_api) },
-			{ name: 'R2', adapter: ERRTimelineAdapterFactory(R2_api) }
-		];
 		$scope.less = {
 			itemSize: 18,
 			itemSpacing: 1,
@@ -65,7 +62,7 @@
 		};
 		$scope.colors = ['#ea297a', '#3b97a4', '#f58537', '#f7931e', '#ba1e1e', '#3b4257', '#353e43'];
 		$scope.$watch('less', refreshLess, true);
-		$scope.model.adapter = $scope.adapters[0].adapter;
+		$scope.model.adapter = $scope.adapters[0];
 		return;
 
 		function refreshLess() {
@@ -84,15 +81,17 @@
 
 })(window.angular, window.less);
 </script>
-<script src="demos/err-api.js"></script>
-<script src="demos/err-timeline-adapter.js"></script>
 <style>
 body {
 	font-family: sans-serif;
 	margin: 60px;
 }
 h1 {
-	margin-bottom: 60px;
+	margin-bottom: 40px;
+}
+.form {
+	margin: 20px auto 60px;
+	max-width: 600px;
 }
 .form>label {
 	display: block;
@@ -113,11 +112,12 @@ h1 {
 </head>
 <body ng-app="demo" ng-controller="demoController">
 	<h1 ng-bind="model.title"></h1>
+	<select ng-model="model.adapter" ng-options="adapter as adapter.name for adapter in adapters"></select>
 	<!-- Here it is! -->
-	<div timeline="model.adapter" class="kartulita" now-playing="model.nowPlaying"></div>
+	<div timeline="model.adapter.timeline" class="kartulita" now-playing="model.nowPlaying"></div>
 	<!-- That's all there is to it!  Here are the slider controls            -->
-	<div style="margin: 60px auto; max-width: 600px;" class="form">
-		<label>Now playing
+	<div class="form">
+		<label>Set "now playing"
 			<input type="text" class="form-control" ng-model="model.nowPlaying">
 		</label>
 		<label>Tile size
@@ -144,4 +144,5 @@ h1 {
 		work otherwise. There is no reliable way to disable CORS in Firefox.
 	</p>
 </body>
+<script src="bower_components/less/dist/less.min.js"></script>
 </html>
