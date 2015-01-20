@@ -8,13 +8,13 @@
 
 	function timelineDateFilter() {
 		return function (when) {
-			return moment(when).local().format('dddd DD.MM');
+			return when.format('dddd DD.MM');
 		};
 	}
 
 	function timelineTimeFilter() {
 		return function (when) {
-			return moment(when).local().format('HH:mm');
+			return when.format('HH:mm');
 		};
 	}
 

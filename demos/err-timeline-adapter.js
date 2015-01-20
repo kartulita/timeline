@@ -6,11 +6,6 @@
 	 *
 	 * GET endpoint?year=YYYY&month=MM&day=DD
 	 *
-	 * The server responds with an array of items (shows) which are then
-	 * transformed by the mapItem function.
-	 *
-	 * i.e: items = httpGet(endpoint?year=YYYY&month=MM&day=DD).map(mapItem)
-	 *
 	 * Demo'ing this requires your browser to have CORS checks disabled unless
 	 * you run it from the live domain.
 	 *
@@ -23,10 +18,10 @@
 
 		return getAdapter;
 		
-		function getAdapter(endpoint) {
+		function getAdapter(api) {
 			var result = {
 				/* URL to get timeline items per day */
-				endpoint: endpoint + '/loader/GetTimelineDay',
+				endpoint: api + '/loader/GetTimelineDay',
 				/* Get contents of a day */
 				getDay: getDay,
 			};
@@ -59,7 +54,7 @@
 				/* Title of item */
 				title: item.HeaderLong || item.Header,
 				/* Start time */
-				start: moment(item.Published),
+				start: moment(item.Published).local(),
 				/* Address of image to display in timeline */
 				thumbnail: getThumbnailUrl(item),
 				/* Address of larger image (not used yet) */

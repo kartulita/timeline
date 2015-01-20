@@ -76,7 +76,7 @@
 		}
 
 		function resetModel(day) {
-			day = day ? moment(day) : moment().local().startOf('day');
+			day = (day ? moment(day) : moment()).local().startOf('day');
 			/* Store reference date */
 			$scope.model.refDate = day;
 			/* Array of dates of days to display */

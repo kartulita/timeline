@@ -10,7 +10,6 @@
 			priority: 10,
 			require: '^timeline',
 			transclude: true,
-			scope: true,
 			link: link
 		};
 

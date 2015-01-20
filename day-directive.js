@@ -9,7 +9,6 @@
 			restrict: 'A',
 			priority: 10,
 			transclude: true,
-			scope: true,
 			link: link
 		};
 
@@ -23,7 +22,7 @@
 				if (!scope.api) {
 					return;
 				}
-				var day = moment(scope.day).clone().local().startOf('day');
+				var day = scope.day.clone();
 				scope.$emit('dayLoading');
 				/*
 				 * We get adjacent days and filter to ensure that day groups
@@ -32,14 +31,14 @@
 				 * requests to the back-end, and also serves to pre-load
 				 * adjacent days if not already loaded.
 				 */
-				var days = [
+				var daysToGet = [
 					day.clone().subtract(1, 'day'),
 					day,
 					day.clone().add(1, 'day')
 				];
 				/* Map days to promises and process result */
-				$q.all(days.map(scope.api.getDay))
-					.then(filterToday)
+				$q.all(daysToGet.map(scope.api.getDay))
+					.then(filterAndSort)
 					.then(createChildren)
 					.finally(emitLoadedEvent);
 
@@ -53,13 +52,17 @@
 					element.remove();
 				}
 
-				function filterToday(data) {
+				function filterAndSort(data) {
 					return _([].concat.apply([], data))
-						.filter(isToday);
+						.filter(isToday)
+						.sort(momentComparator);
 
 					function isToday(item) {
-						return moment(item.start).local().startOf('day')
-							.toDate().getTime() === day.toDate().getTime();
+						return day.isSame(item.start, 'day');
+					}
+
+					function momentComparator(a, b) {
+						return a.start.diff(b.start);
 					}
 				}
 
