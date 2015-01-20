@@ -48,15 +48,15 @@
 	angular.module('demo', ['battlesnake.timeline', 'ui.slider'])
 		.controller('demoController', demoController);
 
-	function demoController($scope, ERRTimelineAdapterFactory, ETVEndpoint, R2Endpoint) {
+	function demoController($scope, ERRTimelineAdapterFactory, ETV_api, R2_api) {
 		$scope.model = {
 			title: 'Timeline demo',
 			adapter: null,
 			nowPlaying: ''
 		};
 		$scope.adapters = [
-			{ name: 'ETV', adapter: ERRTimelineAdapterFactory(ETVEndpoint) },
-			{ name: 'R2', adapter: ERRTimelineAdapterFactory(R2Endpoint) }
+			{ name: 'ETV', adapter: ERRTimelineAdapterFactory(ETV_api) },
+			{ name: 'R2', adapter: ERRTimelineAdapterFactory(R2_api) }
 		];
 		$scope.less = {
 			itemSize: 18,
@@ -86,7 +86,7 @@
 
 })(window.angular, window.less);
 </script>
-<script src="demos/err-endpoints.js"></script>
+<script src="demos/err-api.js"></script>
 <script src="demos/err-timeline-adapter.js"></script>
 <style>
 body {

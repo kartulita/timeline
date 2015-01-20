@@ -39,15 +39,15 @@
 							<!-- Playable -->
 							<div class="playable media-icon icomoon-play"
 								ng-if="item.playable && !isCurrent(item)"></div>
-							<!-- Show is now playing -->
-							<div class="current" ng-if="isCurrent(item)">
-								<span class="media-icon icomoon-play"></span>
-								Vaata otse
-							</div>
 							<!-- Currently playing media is... -->
 							<div class="now-playing"
 								ng-if="nowPlaying && isCurrent(item)">
 								<marquee ng-bind="nowPlaying"></marquee>
+							</div>
+							<!-- Show is now playing -->
+							<div class="current" ng-if="isCurrent(item)">
+								<span class="media-icon icomoon-play"></span>
+								Vaata otse
 							</div>
 						</div>
 						<!-- Hover-over info -->

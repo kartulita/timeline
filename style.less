@@ -305,8 +305,20 @@
 		left: 8px;
 	}
 
+	.now-playing {
+		display: block;
+		width: 100%;
+		background-color: @base-color;
+		color: white;
+		padding: 10px 10px 8px;
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+
 	.current {
-		position: absolute;
+		display: inline-block;
+		float: left;
+		clear: both;
 		background-color: @base-color;
 		color: white;
 		padding: 8px;
@@ -318,18 +330,7 @@
 			box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
 			float: none;
 		}
-	}
 
-	.now-playing {
-		position: absolute;
-		top: 0;
-		right: 0;
-		background-color: @base-color;
-		color: white;
-		padding: 10px 10px 8px;
-		width: @current-item-size / 2;
-		box-sizing: border-box;
-		overflow: hidden;
 	}
 
 }
