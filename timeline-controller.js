@@ -19,6 +19,8 @@
 			revalidateView: revalidateView
 		};
 
+		$scope.isCurrent = isCurrent;
+
 		/* View variables (TODO: Move scrollbox logic to separate directive) */
 		$scope.view = {
 			/* X-coordinate of first item (the reference position for scrolling) */
@@ -65,6 +67,14 @@
 
 		return;
 
+		function daysChanged() {
+			$scope.$broadcast('daysChanged');
+		}
+
+		function currentChanged() {
+			$scope.$broadcast('currentChanged');
+		}
+
 		function resetModel(day) {
 			day = day ? moment(day) : moment().local().startOf('day');
 			/* Store reference date */
@@ -80,6 +90,9 @@
 			$scope.$broadcast('modelReset');
 			/* Re-zero the view */
 			resetView();
+			/* Notify child scopes of changed */
+			daysChanged();
+			currentChanged();
 		}
 
 		function gotoDate(value) {
@@ -115,13 +128,29 @@
 		/* Periodically check which show is currently playing and update view */
 		function updateCurrent() {
 			if (!currentInterval) {
-				currentInterval = $interval(updateCurrent, 60000);
+				currentInterval = $interval(updateCurrent, 15000);
 				$scope.$on('$destroy', function () {
 					$interval.cancel(currentInterval);
 					currentInterval = null;
 				});
 			}
+			var oldCurrent = $scope.model.current;
 			$scope.model.current = $scope.api.getCurrent();
+			if (!isCurrent(oldCurrent)) {
+				currentChanged();
+			}
+		}
+
+		/* Fuzzy comparison to see if item is currently showing */
+		function isCurrent(item) {
+			return sameItemFuzzy(item, $scope.model.current);
+		}
+
+		/* Do not depend on reference equality */
+		function sameItemFuzzy(a, b) {
+			return a === b || (a && b &&
+				a.start.unix() === b.start.unix() &&
+				a.id == b.id);
 		}
 
 		/* Load more data */
@@ -131,6 +160,7 @@
 			}
 			var days = $scope.model.days;
 			days.unshift(days[0].clone().subtract(1, 'day'));
+			daysChanged();
 		}
 
 		function loadFutureDay() {
@@ -139,6 +169,7 @@
 			}
 			var days = $scope.model.days;
 			days.push(days[days.length - 1].clone().add(1, 'day'));
+			daysChanged();
 		}
 
 		/* Event handler to open an item when tapped/clicked */

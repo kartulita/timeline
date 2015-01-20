@@ -4,10 +4,7 @@
 	angular.module('battlesnake.timeline')
 		.directive('timelineDays', timelineDaysDirective);
 
-	function timelineDaysDirective($parse) {
-
-		var itemsParser = /^\s*(\S+?)\s+in\s+(.*?)\s*$/;
-
+	function timelineDaysDirective() {
 		return {
 			restrict: 'A',
 			priority: 10,
@@ -18,14 +15,7 @@
 		};
 
 		function link(scope, element, attrs, controller, transclude) {
-			/* Parse days specification */
-			var matches = attrs.timelineDays.match(itemsParser);
-			if (!matches) {
-				throw new Error('timeline-days expression is not in the form of "<name> in <collection>"');
-			}
-			var local = matches[1];
-			var source = matches[2];
-			scope.$watchCollection(source, updateDays);
+			scope.$on('daysChanged', updateDays);
 			scope.$on('modelReset', clearCache);
 			scope.$on('dayLoadFailed', dayLoadFailed);
 
@@ -53,8 +43,7 @@
 
 			function updateDays() {
 				/* Update elements */
-				var days = $parse(source)(scope);
-				_(days).each(createDayElement);
+				_(scope.model.days).each(createDayElement);
 			}
 
 			/* Find the elements that a day should be inserted between */
@@ -97,7 +86,7 @@
 					daysElements[key] = cacheLine;
 				}
 				var itemScope = scope.$new();
-				itemScope[local] = day.clone();
+				itemScope.day = day.clone();
 				transclude(itemScope, function (clone, scope) {
 					scope.key = key;
 					cacheLine.element = clone;

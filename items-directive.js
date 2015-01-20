@@ -4,10 +4,7 @@
 	angular.module('battlesnake.timeline')
 		.directive('timelineItems', timelineItemsDirective);
 
-	function timelineItemsDirective($parse) {
-
-		var itemsParser = /^\s*(\S+?)\s+in\s+(.*?)\s*$/;
-
+	function timelineItemsDirective() {
 		return {
 			restrict: 'A',
 			priority: 10,
@@ -19,35 +16,14 @@
 			/* The CSS currently does not support more than two items per row */
 			var rowCount = attrs.itemsPerRow || 2;
 
-			var matches = attrs.timelineItems.match(itemsParser);
-			if (!matches) {
-				throw new Error('timeline-items expression is not in the form of "<name> in <collection>"');
-			}
-			var local = matches[1];
-			var source = matches[2];
-			if (attrs.current) {
-				//scope.$watch(attrs.current, rebuildList);
-			}
-			//scope.$watch(source, rebuildList);
 			rebuildList();
-			scope.isCurrent = isCurrent;
+			scope.$on('currentChanged', rebuildList);
 
 			return;
 
-			function isCurrent(item) {
-				return sameItemFuzzy(item, scope.model.current);
-			}
-
-			/* Do not depend on reference equality */
-			function sameItemFuzzy(a, b) {
-				return a === b || (a && b &&
-					a.start.unix() === b.start.unix() &&
-					a.id == b.id);
-			}
-
 			/* Rebuild the view */
 			function rebuildList() {
-				var items = $parse(source)(scope);
+				var items = scope.items;
 
 				var columnElement;
 				var rows;
@@ -67,7 +43,7 @@
 						return -1;
 					}
 					for (var i = 0; i < items.length; i++) {
-						if (isCurrent(items[i])) {
+						if (scope.isCurrent(items[i])) {
 							return i;
 						}
 					}
@@ -129,7 +105,7 @@
 						newRow();
 					}
 					var itemScope = scope.$new();
-					itemScope[local] = item;
+					itemScope.item = item;
 					transclude(itemScope, function (clone, scope) {
 						addToRow(clone);
 					});

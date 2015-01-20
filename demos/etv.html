@@ -72,7 +72,7 @@
 			var vars = _($scope.less).chain()
 				.map(function (v, k) {
 					return [
-						k.replace(/[A-Z]/g, function (c) { return '-' + c.toLowerCase(); }),
+						'timeline-' + k.replace(/[A-Z]/g, function (c) { return '-' + c.toLowerCase(); }),
 						typeof v === 'number' ? v*8 + 'px' : v
 					];
 				})

@@ -1,5 +1,5 @@
 <!-- Timeline -->
-<div class="widget timeline-widget"
+<div class="timeline"
 	ondragstart="return false;" ondrop="return false;"
 	ng-swipe-left="methods.next()" ng-swipe-right="methods.prev()">
 	<a href="javascript://" class="timeline-nav prev" ng-click="methods.prev()"></a>
@@ -14,24 +14,25 @@
 			close-on-date-selection="true" datepicker-append-to-body="true"
 			disabled="disabled">
 	</div>
-	<!-- Days -->
-	<div class="timeline-days"
-		ng-style="{ transform: 'translateX(' + -(view.offset + view.origin) + 'px)' }"
-		timeline-days="day in model.days">
-		<!-- Day -->
-		<div class="timeline-day" timeline-day="items in day">
+	<!-- Scroll control -->
+	<div timeline-days class="timeline-days"
+		ng-style="{ transform: 'translateX(' + -(view.offset + view.origin) + 'px)' }">
+		<!-- day in model.days -->
+		<div timeline-day class="timeline-day">
 			<div class="timeline-day-title">
 				{{ ::day | timelineDate }}
 			</div>
-			<!-- Items -->
-			<div class="timeline-items" timeline-items="item in items"
-				items-per-row="2" current="model.current">
+			<!-- items = day.items -->
+			<div timeline-items items-per-row="2" current="model.current"
+				class="timeline-items">
+				<!-- item in items -->
 				<div class="timeline-item-container"
 					ng-class="{ current: isCurrent(item) }"
 					ng-swipe-left="methods.prev()"
 					ng-swipe-right="methods.next()">
-					<!-- Item -->
-					<a class="timeline-item" href="javascript://" ng-click="methods.openItem(item)">
+					<!-- Item (no directive needed for this) -->
+					<a timeline-item class="timeline-item" href="javascript://"
+						ng-click="methods.openItem(item)">
 						<img ng-src="{{ ::item.thumbnail }}" alt="{{ ::item.title }}"
 							class="timeline-item-thumbnail">
 						<div class="media-icons timeline-item-states">

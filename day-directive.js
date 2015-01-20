@@ -4,10 +4,7 @@
 	angular.module('battlesnake.timeline')
 		.directive('timelineDay', timelineDayDirective);
 
-	function timelineDayDirective($parse, $q) {
-
-		var itemsParser = /^\s*(\S+?)\s+in\s+(.*?)\s*$/;
-
+	function timelineDayDirective($q) {
 		return {
 			restrict: 'A',
 			priority: 10,
@@ -17,15 +14,6 @@
 		};
 
 		function link(scope, element, attrs, controller, transclude) {
-			//scope.$watch(attrs.day, reloadDay);
-
-			var matches = attrs.timelineDay.match(itemsParser);
-			if (!matches) {
-				throw new Error('timeline-day expression is not in the form of "<name> in <collection>"');
-			}
-			var local = matches[1];
-			var source = matches[2];
-			//scope.$watch(source, reloadDay);
 			reloadDay();
 
 			var itemsElement;
@@ -35,7 +23,7 @@
 				if (!scope.api) {
 					return;
 				}
-				var day = moment($parse(source)(scope)).clone().local().startOf('day');
+				var day = moment(scope.day).clone().local().startOf('day');
 				scope.$emit('dayLoading');
 				/*
 				 * We get adjacent days and filter to ensure that day groups
@@ -85,7 +73,7 @@
 						return;
 					}
 					/* Store data and create subelements if needed */
-					scope[local] = data;
+					scope.items = data;
 					if (!itemsElement) {
 						transclude(scope, function (clone, scope) {
 							itemsElement = clone.appendTo(element);
