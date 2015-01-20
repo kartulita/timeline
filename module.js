@@ -3,13 +3,7 @@
 
 	/**
 	 * @ngdoc module
-	 * @name battlesnake.timeline
-	 * @requires underscore
-	 * @requires moment
-	 * @requires ngTouch
-	 * @requires monospaced.mousewheel
-	 * @requires fontawesome
-	 * @requires jquery
+	 * @name timeline
 	 *
 	 * @description
 	 * Timeline widget
