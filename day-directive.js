@@ -23,7 +23,7 @@
 					return;
 				}
 				var day = scope.day.clone();
-				scope.$emit('dayLoading');
+				scope.$on('scrollChanged', positionTitle);
 				/*
 				 * We get adjacent days and filter to ensure that day groups
 				 * correspond to the local time-zone.  Since the front-end
@@ -37,10 +37,30 @@
 					day.clone().add(1, 'day')
 				];
 				/* Map days to promises and process result */
+				scope.$emit('dayLoading');
 				$q.all(daysToGet.map(scope.api.getDay))
 					.then(filterAndSort)
 					.then(createChildren)
 					.finally(emitLoadedEvent);
+
+				return;
+
+				function positionTitle(event, offset, width) {
+					var e_l = element.position().left - offset;
+					var e_w = element.innerWidth();
+					var e_r = e_l + e_w;
+					var title = element.find('.timeline-day-title');
+					var t_w = title.find('>*').outerWidth(true);
+					if (e_l <= 0 && e_r >= t_w) {
+						title.css({ left: -e_l + 'px' });
+					} else if (e_l < 0 && e_r > 0) {
+						title.css({ left: e_w - t_w + 'px' });
+					} else if (e_l > 0) {
+						title.css({ left: 0 });
+					} else {
+						title.css({ left: e_w - t_w + 'px' });
+					}
+				}
 
 				function emitLoadedEvent() {
 					scope.$emit('dayLoaded', element);

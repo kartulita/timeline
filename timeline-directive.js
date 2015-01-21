@@ -30,9 +30,6 @@
 			angular.element($window)
 				.bind('resize', scope.methods.revalidateView);
 
-			/* Trigger loading of adjacent days */
-			scope.methods.revalidateView();
-
 			scope.$watch('adapter', adapterChanged);
 			scope.$watch('view.isDatePickerOpen', datePickerOpenChanged);
 

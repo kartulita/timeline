@@ -15,8 +15,7 @@
 			next: nextScreen,
 			wheel: wheelHandler,
 			changeScreen: changeScreen,
-			openItem: openItem,
-			revalidateView: revalidateView
+			openItem: openItem
 		};
 
 		$scope.isCurrent = isCurrent;
@@ -120,8 +119,7 @@
 			}
 			updateCurrent();
 			$timeout(function updateOrigin() {
-				$scope.view.origin = $scope.view.reference.position().left;
-				revalidateView();
+				setOrigin($scope.view.reference.position().left);
 			}, 0);
 		}
 
@@ -177,22 +175,27 @@
 			$scope.onOpenItem({ item: item });
 		}
 
-		/* Load more data if needed (TODO: Bind to separate directive) */
-		function revalidateView() {
+		/* Called when scroll position changed */
+		function scrollChanged() {
 			var pageWidth = $scope.geometry.pageWidth();
 			var viewWidth = $scope.geometry.viewWidth();
 			var loadNextThreshold = pageWidth * 1.5;
-			var offset = $scope.view.targetOffset;
 			var origin = $scope.view.origin;
+			var targetOffset = $scope.view.targetOffset;
+			var targetPosition = targetOffset + origin;
+			var offset = $scope.view.offset;
 			var position = offset + origin;
+			/* Load more days if needed */
 			if ($scope.view.reference && daysLoading === 0) {
-				if (position < loadNextThreshold) {
+				if (targetPosition < loadNextThreshold) {
 					loadPastDay();
 				}
-				if (position > (viewWidth - loadNextThreshold)) {
+				if (targetPosition > (viewWidth - loadNextThreshold)) {
 					loadFutureDay();
 				}
 			}
+			/* Keep a day title visible */
+			$scope.$broadcast('scrollChanged', position, pageWidth);
 		}
 
 		/* Scroll event handlers and logic (TODO: Move to separate directive) */
@@ -207,6 +210,7 @@
 			$scope.view.isDatePickerOpening = false;
 			$scope.view.datePickerValue = $scope.model.refDate.toDate();
 			$timeout.cancel($scope.view.openDatePickerTimer);
+			scrollChanged();
 		}
 
 		function prevScreen() {
@@ -235,7 +239,12 @@
 				$scope.view.targetOffset = offset;
 				startAnimation();
 			}
-			revalidateView();
+			scrollChanged();
+		}
+
+		function setOrigin(origin) {
+			$scope.view.origin = origin;
+			scrollChanged();
 		}
 
 		function startAnimation() {
@@ -253,19 +262,34 @@
 		}
 
 		function animateScroll() {
-			var speed = 5;
+			/* dx/dt = clamp(Dx * moveRate, minSpeed, maxSpeed), note: moveRate has unit /s */
+			var moveRate = 5;
+			/* Speed limits (pixels/s) */
+			var minSpeed = 100, maxSpeed = 3000;
+			/* How close we have to be to the target for scrolling to stop */
+			var stopThreshold = 1;
+			/* Dynamics */
 			var now = new Date().getTime() / 1000;
 			var dt = now - $scope.view.previousFrameTime;
 			$scope.view.previousFrameTime = now;
+			/* Geometry */
 			var target = getOffset(false);
 			var current = getOffset(true);
 			var direction = target === current ? 0 : target > current ? +1 : -1;
-			var delta = (target - current) * speed;
-			/* Fixes anti-aliasing issues and prevents "sluggish" appearance */
-			delta = delta < 0 ? Math.floor(delta) : Math.ceil(delta);
+			var delta = (target - current) * moveRate;
+			/* Enforce minimum speed */
+			var absDelta = Math.abs(delta);
+			if (absDelta < minSpeed)  {
+				delta *= minSpeed / absDelta;
+			}
+			if (absDelta > maxSpeed) {
+				delta *= maxSpeed / absDelta;
+			}
+			/* Apply change */
 			current += dt * delta;
-			/* Crossed or reached target */
-			if ((target - current) * direction <= 0) {
+			/* We passed or reached the target */
+			var remaining = target - current;
+			if (remaining * direction <= 0 || Math.abs(remaining) < stopThreshold) {
 				current = target;
 				stopAnimation();
 			}

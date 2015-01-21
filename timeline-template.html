@@ -20,7 +20,9 @@
 		<!-- day in model.days -->
 		<div timeline-day class="timeline-day">
 			<div class="timeline-day-title">
-				{{ ::day | timelineDate }}
+				<span class="timeline-day-title-dims">
+					{{ ::day | timelineDate }}
+				</span>
 			</div>
 			<!-- items = day.items -->
 			<div timeline-items items-per-row="2" current="model.current"
