@@ -21,7 +21,7 @@
 		<div timeline-day class="timeline-day">
 			<div class="timeline-day-title">
 				<span class="timeline-day-title-dims">
-					{{ ::day | timelineDate }}
+					{{ day | timelineDate }}
 				</span>
 			</div>
 			<!-- items = day.items -->
@@ -35,7 +35,7 @@
 					<!-- Item (no directive needed for this) -->
 					<a timeline-item class="timeline-item" href="javascript://"
 						ng-click="methods.openItem(item)">
-						<img ng-src="{{ ::item.thumbnail }}" alt="{{ ::item.title }}"
+						<img ng-src="{{ item.thumbnail }}" alt="{{ item.title }}"
 							class="timeline-item-thumbnail">
 						<div class="media-icons timeline-item-states">
 							<!-- Playable -->
@@ -55,10 +55,10 @@
 						<!-- Hover-over info -->
 						<div class="timeline-item-header">
 							<div class="timeline-item-time">
-								{{ ::item.start | timelineTime }}
+								{{ item.start | timelineTime }}
 							</div>
 							<div class="timeline-item-title">
-								{{ ::item.title }}
+								{{ item.title }}
 							</div>
 						</div>
 					</a>
