@@ -67,18 +67,22 @@
 				function openDatePickerNow() {
 					scope.view.isDatePickerOpen = true;
 					scope.view.openDatePickerTimer = null;
-					var rect = element.find('.timeline-goto')[0].getBoundingClientRect();
-					var dropDown = angular.element('.dropdown-menu');
-					var scroll = {
-						x: $(window).scrollLeft(),
-						y: $(window).scrollTop()
-					};
+					var el = element.find('.timeline-goto');
+					var dropDown = angular.element('.dropdown-menu[ng-model]');
 					$timeout(function delayedPositioning() {
+						var offset = {
+							x: el.offset().left + el.outerWidth(),
+							y: el.offset().top + el.outerHeight()
+						};
 						dropDown.css({
-							top: (scroll.y + rect.bottom) + 'px',
-							left: (scroll.x + rect.right - dropDown.outerWidth()) + 'px'
+							left: (offset.x - dropDown.outerWidth()) + 'px',
+							top: (offset.y) + 'px'
 						});
-					}, 0);
+						/*
+						 * 0ms (next-tick) doesn't work (dropDown width not set
+						 * correctly), lets try something bigger
+						 */
+					}, 100);
 				}
 			}
 
