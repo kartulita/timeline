@@ -69,10 +69,14 @@
 					scope.view.openDatePickerTimer = null;
 					var rect = element.find('.timeline-goto')[0].getBoundingClientRect();
 					var dropDown = angular.element('.dropdown-menu');
+					var scroll = {
+						x: $(window).scrollLeft(),
+						y: $(window).scrollTop()
+					};
 					$timeout(function delayedPositioning() {
 						dropDown.css({
-							top: rect.bottom + 'px',
-							left: (rect.right - dropDown.outerWidth()) + 'px'
+							top: (scroll.y + rect.bottom) + 'px',
+							left: (scroll.x + rect.right - dropDown.outerWidth()) + 'px'
 						});
 					}, 0);
 				}
