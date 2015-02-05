@@ -12,6 +12,7 @@
 			is-open="view.isDatePickerOpen"
 			starting-day="1" init-date="new Date()" show-button-bar="true"
 			close-on-date-selection="true" datepicker-append-to-body="true"
+			current-text="{{ strings('today') }}" clear-text="{{ strings('clear') }}" close-text="{{ strings('close') }}"
 			disabled="disabled">
 	</div>
 	<!-- Scroll control -->
@@ -49,7 +50,7 @@
 							<!-- Show is now playing -->
 							<div class="current" ng-if="isCurrent(item)">
 								<span class="media-icon icomoon-play"></span>
-								Vaata otse
+								{{ strings('onAir') }}
 							</div>
 						</div>
 						<!-- Hover-over info -->

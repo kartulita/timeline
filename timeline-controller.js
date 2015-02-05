@@ -4,7 +4,9 @@
 	angular.module('battlesnake.timeline')
 		.controller('timelineController', timelineController);
 
-	function timelineController($scope, $timeout, $interval) {
+	function timelineController($scope, $timeout, $interval, languageService, timelineLocale) {
+
+		$scope.strings = languageService(timelineLocale);
 
 		$scope.model = {
 		};

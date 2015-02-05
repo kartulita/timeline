@@ -18,6 +18,9 @@
 <!-- jQuery UI needed for slider controls in this demo -->
 <script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
 <script src="bower_components/angular-ui-slider/src/slider.js"></script>
+<!-- Language -->
+<script src="../language/module.js"></script>
+<script src="../language/language-service.js"></script>
 <!-- Apis -->
 <script src="../err/module.js"></script>
 <script src="../err/apis.js"></script>
@@ -26,6 +29,7 @@
 <link rel="stylesheet/less" href="style.less" type="text/css">
 <script src="module.js"></script>
 <script src="timeline-template.html" type="text/ng-template"></script>
+<script src="timeline-locale.js"></script>
 <script src="timeline-service.js"></script>
 <script src="timeline-filters.js"></script>
 <script src="timeline-controller.js"></script>
@@ -41,7 +45,7 @@
 	angular.module('demo', ['battlesnake.timeline', 'ui.slider', 'battlesnake.err'])
 		.controller('demoController', demoController);
 
-	function demoController($scope, timelineAdapterFactory, scheduleApi) {
+	function demoController($scope, $timeout, timelineAdapterFactory, scheduleApi) {
 		$scope.adapters = _(scheduleApi).map(function (api, name) {
 			return {
 				name: name,
@@ -75,7 +79,11 @@
 				})
 				.object()
 				.value();
-			less.modifyVars(vars);
+			if (less && less.modifyVars) {
+				less.modifyVars(vars);
+			} else {
+				$timeout(refreshLess, 100);
+			}
 		}
 	}
 

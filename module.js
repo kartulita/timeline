@@ -11,6 +11,6 @@
 	 * @example
 	 * See demos/etv.html
 	 */
-	angular.module('battlesnake.timeline', ['ngTouch', 'ui.bootstrap']);
+	angular.module('battlesnake.timeline', ['ngTouch', 'ui.bootstrap', 'battlesnake.language']);
 
 })(window.angular);
