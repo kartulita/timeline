@@ -1,94 +1,259 @@
-(function (angular, _, moment) {
+(function (angular, moment, requestAnimationFrame) {
 	'use strict';
 
 	angular.module('battlesnake.timeline')
-		.controller('timelineController', timelineController);
+		.factory('timelineAnimator', timelineAnimatorFactory)
+		.controller('timelineController', timelineController)
+		;
 
-	function timelineController($scope, $timeout, $interval, languageService, timelineLocale) {
+	function seconds() {
+		return new Date().getTime() / 1000;
+	}
 
-		$scope.strings = languageService(timelineLocale);
+	/* TODO: Spin out into separate service/module or replace with ngAnimate */
+	function timelineAnimatorFactory($timeout) {
+		return timelineAnimator;
+		
+		function timelineAnimator(scope, onValidate, onEvent) {
+			var current = 0;
+			var target = 0;
+			var animating = false;
+			var lastFrame = 0;
 
-		$scope.model = {
+			return {
+				reset: reset,
+				get: get,
+				set: set,
+				inc: inc,
+				revalidate: revalidate
+			};
+
+			function reset() {
+				set(0, true);
+			}
+
+			function get(immediate) {
+				return immediate ? current : target;
+			}
+
+			function set(value, immediate) {
+				value = Math.round(value);
+				if (immediate === 'animating') {
+					current = value;
+					startAnimation();
+				} else if (immediate) {
+					current = value;
+					target = value;
+					stopAnimation();
+				} else {
+					target = value;
+					startAnimation();
+				}
+				revalidate();
+				onEvent('changed', current, target);
+			}
+
+			function revalidate() {
+				var val = onValidate(current, target);
+				if (typeof val === 'number' && target !== val) {
+					target = val;
+					startAnimation();
+				}
+			}
+
+			function inc(delta, immediate) {
+				set(get(immediate) + delta, immediate);
+			}
+
+			function requestFrame() {
+				if (requestAnimationFrame) {
+					requestAnimationFrame(function () {
+						scope.$apply(animateFrame);
+					});
+				} else {
+					$timeout(animateFrame, 15);
+				}
+			}
+
+			function startAnimation() {
+				if (!animating) {
+					animating = true;
+					lastFrame = seconds();
+					onEvent('start');
+					requestFrame();
+				}
+			}
+
+			function stopAnimation() {
+				if (animating) {
+					animating = false;
+					onEvent('stop');
+				}
+			}
+
+			function animateFrame() {
+				if (!animating) {
+					return;
+				}
+				/* dx/dt = clamp(Dx * moveRate, minSpeed, maxSpeed), note: moveRate has unit /s */
+				var moveRate = 5;
+				/* Speed limits (pixels/s) */
+				var minSpeed = 100, maxSpeed = 3000;
+				/* How close we have to be to the target for scrolling to stop */
+				var stopThreshold = 1;
+				/* Dynamics */
+				var now = seconds();
+				var dt = now - lastFrame;
+				lastFrame = now;
+				/* Geometry */
+				var direction = target === current ? 0 : target > current ? +1 : -1;
+				var delta = (target - current) * moveRate;
+				/* Enforce minimum speed */
+				var absDelta = Math.abs(delta);
+				if (absDelta === 0) {
+					stopAnimation();
+					return;
+				}
+				if (absDelta < minSpeed)  {
+					delta *= minSpeed / absDelta;
+				}
+				if (absDelta > maxSpeed) {
+					delta *= maxSpeed / absDelta;
+				}
+				/* Apply change */
+				var next = current + dt * delta;
+				/* We passed or reached the target */
+				var remaining = target - next;
+				if (remaining * direction <= 0 || Math.abs(remaining) < stopThreshold) {
+					set(target, true);
+				} else {
+					set(next, 'animating');
+					requestFrame();
+				}
+			}
+		}
+	}
+
+	function timelineController($scope, $timeout, $interval, $window, $swipe, languageService, timelineLocale, timelineAnimator) {
+		var scope = $scope;
+
+		scope.initController = initController;
+
+		/* l10n */
+		scope.strings = languageService(timelineLocale);
+
+		/* This object is used by child directives */
+		scope.model = {
 		};
 
-		/* Methods callable by the view */
-		$scope.methods = {
+		/* High-level methods for manipulating the view state */
+		scope.methods = {
+			/* Simple navigation */
 			prev: prevScreen,
 			next: nextScreen,
-			wheel: wheelHandler,
 			changeScreen: changeScreen,
+			/* Mousewheel */
+			wheel: wheelHandler,
+			/* Precise movement */
+			scrollBy: scrollBy,
+			scrollTo: scrollTo,
+			/* User activated a timeline-item */
 			openItem: openItem
 		};
 
-		$scope.isCurrent = isCurrent;
+		/* Helper function to detect if a timeline-item is currently airing */
+		scope.isCurrent = isCurrent;
 
-		/* View variables (TODO: Move scrollbox logic to separate directive) */
-		$scope.view = {
+		/* View variables which serve no purpose outside this directive */
+		/* (TODO: Move scrollbox logic to separate directive) */
+		scope.view = {
+			/* Animator for scroll position */
+			position: timelineAnimator(scope, scrollChanged, scrollEvent),
 			/* X-coordinate of first item (the reference position for scrolling) */
 			origin: 0,
-			/* Current scroll offset (relative to reference item) */
-			offset: 0,
-			/* Target scroll offset (offset animates towards this value) */
-			targetOffset: 0,
-			/* Timer used for animating offset */
-			scrollTimer: null,
 			/* Reference element */
 			reference: null,
-			/* Is the date picker open? */
-			isDatePickerOpen: false,
-			/* Is the date picker opening */
-			isDatePickerOpening: false,
-			/* Date shown in date picker */
-			datePickerValue: null,
-			/* Shows/hides the date picker */
-			openDatePicker: null,
-			closeDatePicker: null,
-			/* Timer to show date picker after text box has expanded into view */
-			openDatePickerTimer: null
+			/* Main container for timeline */
+			mainContainer: null,
+			/* Element to scroll */
+			scrollContainer: null,
+			/* Date picker */
+			datePicker: {
+				reset: resetDatePicker,
+				isOpen: false,
+				isOpening: false,
+				value: null,
+				open: openDatePicker,
+				close: closeDatePicker,
+				timer: null,
+				stateChanged: datePickerStateChanged
+			},
+			/* Touch events */
+			touch: {
+				start: touchStart,
+				move: touchMove,
+				end: touchEnd,
+				cancel: touchCancel,
+				memo: null
+			}
 		};
 
-		/* Functions set by the directive, which get geometry from the view */
-		$scope.geometry = {
-			/* Width of visible area */
-			pageWidth: null,
-			/* Width of entire timeline view (including hidden items) */
-			viewWidth: null
-		};
-
+		/* TODO: Move these into the model */
+		/* Number of days still loading */
 		var daysLoading = 0;
-		var currentInterval;
+		/* How far to scroll on wheel notch */
 		var screensPerWheelDelta = 0.2;
-
-		$scope.$on('adapterChanged', function () { resetModel(); });
-		$scope.$on('dayLoading', dayLoading);
-		$scope.$on('dayLoaded', dayLoaded);
-		$scope.$on('endOfDays', endOfDays);
-
-		$scope.$watch('view.datePickerValue', gotoDate);
+		/* Used for "currently playing" checker */
+		var currentInterval;
 
 		return;
 
-		function daysChanged() {
-			$scope.$broadcast('daysChanged');
+		/* Initialiser */
+
+		function initController(element) {
+			scope.initController = null;
+			scope.view.mainContainer = element;
+			scope.view.scrollContainer = scope.view.mainContainer.find('.timeline-days');
+			/* Touch events */
+			$swipe.bind(scope.view.mainContainer, scope.view.touch, ['touch']);
+			/* Scope observers */
+			scope.$on('adapterChanged', function () { resetModel(); });
+			scope.$on('dayLoading', dayLoading);
+			scope.$on('dayLoaded', dayLoaded);
+			scope.$on('endOfDays', endOfDays);
+			/* Date picker observers */
+			scope.$watch('view.datePicker.value', gotoDate);
+			scope.$watch('view.datePicker.isOpen', scope.view.datePicker.stateChanged);
+			/* Validate and load new items (if needed) on resize */
+			angular.element($window)
+				.bind('resize', scope.methods.revalidateView);
 		}
 
-		function currentChanged() {
-			$scope.$broadcast('currentChanged');
+		/* Geometry */
+
+		function getPageWidth() {
+			return scope.view.mainContainer.innerWidth();
 		}
+
+		function getViewWidth() {
+			return scope.view.scrollContainer.outerWidth(true);
+		}
+
+		/* Model */
 
 		function resetModel(day) {
 			day = (day ? moment(day) : moment()).local().startOf('day');
 			/* Store reference date */
-			$scope.model.refDate = day;
+			scope.model.refDate = day;
 			/* Array of dates of days to display */
-			$scope.model.days = [day];
+			scope.model.days = [day];
 			/* Currently active item */
-			$scope.model.current = null;
+			scope.model.current = null;
 			/* Have we hit the start or end of the series? */
-			$scope.model.hitStart = false;
-			$scope.model.hitEnd = false;
+			scope.model.hitStart = false;
+			scope.model.hitEnd = false;
 			/* Notify children */
-			$scope.$broadcast('modelReset');
+			scope.$broadcast('modelReset');
 			/* Re-zero the view */
 			resetView();
 			/* Notify child scopes of changed */
@@ -97,16 +262,8 @@
 		}
 
 		function gotoDate(value) {
-			if ($scope.model.refDate && !$scope.model.refDate.isSame(value, 'day')) {
+			if (scope.model.refDate && !scope.model.refDate.isSame(value, 'day')) {
 				resetModel(value);
-			}
-		}
-
-		function endOfDays(event, end) {
-			if (end < 0) {
-				$scope.model.hitStart = true;
-			} else if (end > 0) {
-				$scope.model.hitEnd = true;
 			}
 		}
 
@@ -116,12 +273,18 @@
 		
 		function dayLoaded(event, element) {
 			daysLoading--;
-			if (!$scope.view.reference) {
-				$scope.view.reference = element;
+			/* Set day as reference if none has been acquired yet */
+			if (!scope.view.reference) {
+				scope.view.reference = element;
 			}
+			/* Update currently-airing */
 			updateCurrent();
+			/* Delayed until reflow */
 			$timeout(function updateOrigin() {
-				setOrigin($scope.view.reference.position().left);
+				/* Set/update origin x-coordinate */
+				setOrigin(scope.view.reference.position().left);
+				/* Validation triggers updating of day-title positions */
+				scope.view.position.revalidate();
 			}, 0);
 		}
 
@@ -129,13 +292,13 @@
 		function updateCurrent() {
 			if (!currentInterval) {
 				currentInterval = $interval(updateCurrent, 15000);
-				$scope.$on('$destroy', function () {
+				scope.$on('$destroy', function () {
 					$interval.cancel(currentInterval);
 					currentInterval = null;
 				});
 			}
-			var oldCurrent = $scope.model.current;
-			$scope.model.current = $scope.api.getCurrent();
+			var oldCurrent = scope.model.current;
+			scope.model.current = scope.api.getCurrent();
 			if (!isCurrent(oldCurrent)) {
 				currentChanged();
 			}
@@ -143,7 +306,7 @@
 
 		/* Fuzzy comparison to see if item is currently showing */
 		function isCurrent(item) {
-			return sameItemFuzzy(item, $scope.model.current);
+			return sameItemFuzzy(item, scope.model.current);
 		}
 
 		/* Do not depend on reference equality */
@@ -153,66 +316,166 @@
 				a.id == b.id);
 		}
 
+		/* Observers */
+
+		function daysChanged() {
+			scope.$broadcast('daysChanged');
+		}
+
+		function currentChanged() {
+			scope.$broadcast('currentChanged');
+		}
+
+		function endOfDays(event, end) {
+			if (end < 0) {
+				scope.model.hitStart = true;
+			} else if (end > 0) {
+				scope.model.hitEnd = true;
+			}
+		}
+
 		/* Load more data */
+
 		function loadPastDay() {
-			if ($scope.model.hitStart) {
+			if (scope.model.hitStart) {
 				return;
 			}
-			var days = $scope.model.days;
+			var days = scope.model.days;
 			days.unshift(days[0].clone().subtract(1, 'day'));
 			daysChanged();
 		}
 
 		function loadFutureDay() {
-			if ($scope.model.hitEnd) {
+			if (scope.model.hitEnd) {
 				return;
 			}
-			var days = $scope.model.days;
+			var days = scope.model.days;
 			days.push(days[days.length - 1].clone().add(1, 'day'));
 			daysChanged();
 		}
 
 		/* Event handler to open an item when tapped/clicked */
 		function openItem(item) {
-			$scope.onOpenItem({ item: item });
+			scope.onOpenItem({ item: item });
 		}
 
-		/* Called when scroll position changed */
-		function scrollChanged() {
-			var pageWidth = $scope.geometry.pageWidth();
-			var viewWidth = $scope.geometry.viewWidth();
-			var loadNextThreshold = pageWidth * 1.5;
-			var origin = $scope.view.origin;
-			var targetOffset = $scope.view.targetOffset;
-			var targetPosition = targetOffset + origin;
-			var offset = $scope.view.offset;
-			var position = offset + origin;
+		/* Date picker */
+
+		function openDatePicker($event) {
+			if (scope.view.isDatePickerOpening) {
+				closeDatePicker();
+				return;
+			}
+			scope.view.datePicker.value = null;
+			scope.view.datePicker.isOpening = true;
+			scope.view.datePicker.timer = $timeout(openDatePickerNow, 200);
+			return;
+
+			function openDatePickerNow() {
+				scope.view.datePicker.isOpen = true;
+				scope.view.datePicker.timer = null;
+				var el = scope.view.mainContainer.find('.timeline-goto');
+				var dropDown = angular.element('.dropdown-menu[datepicker-popup-wrap]');
+				dropDown.css({
+					left: 0,
+					top: 0,
+					display: 'none'
+				});
+				/* 0ms to reduce flicker */
+				$timeout(delayedPositioning, 0);
+				/* 20/50/100ms since 0ms doesn't work on all browsers */
+				$timeout(delayedPositioning, 20);
+				$timeout(delayedPositioning, 50);
+				$timeout(delayedPositioning, 100);
+
+				return;
+
+				function delayedPositioning() {
+					var offset = {
+						x: el.offset().left + el.outerWidth(),
+						y: el.offset().top + el.outerHeight()
+					};
+					dropDown.css({
+						left: (offset.x - dropDown.outerWidth()) + 'px',
+						top: (offset.y) + 'px',
+						display: 'block'
+					});
+				}
+			}
+		}
+
+		function closeDatePicker() {
+			scope.view.datePicker.isOpen = false;
+			scope.view.datePicker.isOpening = false;
+			$timeout.cancel(scope.view.datePicker.timer);
+			scope.view.datePicker.timer = null;
+		}
+
+		function datePickerStateChanged(value) {
+			if (!value) {
+				closeDatePicker();
+			}
+		}
+
+		function resetDatePicker() {
+			scope.view.isDatePickerOpen = false;
+			scope.view.isDatePickerOpening = false;
+			scope.view.datePickerValue = scope.model.refDate.toDate();
+			$timeout.cancel(scope.view.openDatePickerTimer);
+		}
+
+		/* Called by the animator: updates view and triggers loading of more days if needed */
+
+		function scrollChanged(current, target) {
+			var pageWidth = getPageWidth();
+			var viewWidth = getViewWidth();
+			var origin = scope.view.origin;
+			/* Bounds checking */
+			var min = -origin, max = viewWidth - pageWidth - origin;
+			if (target > max) {
+				target = max;
+			}
+			if (target < min) {
+				target = min;
+			}
+			var origin = scope.view.origin;
+			var position = {
+				current: current + origin,
+				target: target + origin
+			};
 			/* Load more days if needed */
-			if ($scope.view.reference && daysLoading === 0) {
-				if (targetPosition < loadNextThreshold) {
+			var loadNextThreshold = pageWidth * 2;
+			if (scope.view.reference && daysLoading < 2) {
+				if (position.target < loadNextThreshold) {
 					loadPastDay();
 				}
-				if (targetPosition > (viewWidth - loadNextThreshold)) {
+				if (position.target > (viewWidth - loadNextThreshold)) {
 					loadFutureDay();
 				}
 			}
-			/* Keep a day title visible */
-			$scope.$broadcast('scrollChanged', position, pageWidth);
+			/*
+			 * No longer done via ng-style as it doesn't seem to get updated
+			 * during touch events
+			 */
+			scope.view.scrollContainer.css({ 
+				transform: 'translateX(' + (-position.current) + 'px)',
+			});
+			/* Notify children ('day': keep a day title visible) */
+			scope.$broadcast('scrollChanged', position.current, pageWidth);
+			/* Validated OK */
+			return target;
 		}
 
-		/* Scroll event handlers and logic (TODO: Move to separate directive) */
+		function scrollEvent(event) {
+		}
+
+		/* High-level scroll methods */
+
 		function resetView() {
-			stopAnimation();
-			$scope.view.origin = 0;
-			$scope.view.offset = 0;
-			$scope.view.targetOffset = 0;
-			$scope.view.reference = null;
-			/* Set date in date picker */
-			$scope.view.isDatePickerOpen = false;
-			$scope.view.isDatePickerOpening = false;
-			$scope.view.datePickerValue = $scope.model.refDate.toDate();
-			$timeout.cancel($scope.view.openDatePickerTimer);
-			scrollChanged();
+			scope.view.origin = 0;
+			scope.view.reference = null;
+			scope.view.position.reset();
+			scope.view.datePicker.reset();
 		}
 
 		function prevScreen() {
@@ -229,94 +492,83 @@
 			event.preventDefault();
 		}
 
-		function getOffset(actual) {
-			return actual ? $scope.view.offset : $scope.view.targetOffset;
-		}
-
-		function setOffset(offset, immediate) {
-			offset = Math.round(offset);
-			if (immediate) {
-				$scope.view.offset = offset;
-			} else {
-				$scope.view.targetOffset = offset;
-				startAnimation();
-			}
-			scrollChanged();
-		}
-
 		function setOrigin(origin) {
-			$scope.view.origin = origin;
+			scope.view.origin = origin;
 			scrollChanged();
 		}
 
-		function startAnimation() {
-			if (!$scope.view.scrollTimer) {
-				$scope.view.scrollTimer = $interval(animateScroll, 10);
-				$scope.view.previousFrameTime = new Date().getTime() / 1000;
-			}
+		/* Touch events */
+
+		function touchStart(r) {
+			scope.view.touch.memo = {
+				start: {
+					x: r.x,
+					time: seconds()
+				},
+				last: {
+					x: r.x
+				}
+			};
 		}
 
-		function stopAnimation() {
-			if ($scope.view.scrollTimer) {
-				$interval.cancel($scope.view.scrollTimer);
-				$scope.view.scrollTimer = null;
+		function touchMove(r) {
+			if (!scope.view.touch.memo) {
+				return;
 			}
+			var dx = scope.view.touch.memo.last.x - r.x;
+			scope.view.touch.memo.last = {
+				x: r.x
+			};
+			scope.methods.scrollBy(dx, true);
 		}
 
-		function animateScroll() {
-			/* dx/dt = clamp(Dx * moveRate, minSpeed, maxSpeed), note: moveRate has unit /s */
-			var moveRate = 5;
-			/* Speed limits (pixels/s) */
-			var minSpeed = 100, maxSpeed = 3000;
-			/* How close we have to be to the target for scrolling to stop */
-			var stopThreshold = 1;
-			/* Dynamics */
-			var now = new Date().getTime() / 1000;
-			var dt = now - $scope.view.previousFrameTime;
-			$scope.view.previousFrameTime = now;
-			/* Geometry */
-			var target = getOffset(false);
-			var current = getOffset(true);
-			var direction = target === current ? 0 : target > current ? +1 : -1;
-			var delta = (target - current) * moveRate;
-			/* Enforce minimum speed */
-			var absDelta = Math.abs(delta);
-			if (absDelta < minSpeed)  {
-				delta *= minSpeed / absDelta;
-			}
-			if (absDelta > maxSpeed) {
-				delta *= maxSpeed / absDelta;
-			}
-			/* Apply change */
-			current += dt * delta;
-			/* We passed or reached the target */
-			var remaining = target - current;
-			if (remaining * direction <= 0 || Math.abs(remaining) < stopThreshold) {
-				current = target;
-				stopAnimation();
-			}
-			setOffset(current, true);
+		function touchEnd(r) {
+			touchStop(r, false);
 		}
 
-		function changeScreen(delta) {
-			var pageWidth = $scope.geometry.pageWidth();
-			var viewWidth = $scope.geometry.viewWidth();
+		function touchCancel(r) {
+			touchStop(r, true);
+		}
+
+		function touchStop(r, cancel) {
+			if (!scope.view.touch.memo) {
+				return;
+			}
+			if (!cancel) {
+				/* Swipe detection */
+				var dx = -(r.x - scope.view.touch.memo.start.x);
+				var dt = seconds() - scope.view.touch.memo.start.time;
+				var ax = Math.abs(dx);
+				var v = ax / dt;
+				/* Distance+velocity threshold and time limit for swipe */
+				if (dt > 0 && dt < 0.3 && v > 1100 && ax > 50) {
+					$timeout(function () {
+						scope.methods.changeScreen(dx / ax);
+					}, 30);
+				} else if (ax > 0) {
+					touchMove(r);
+				}
+			}
+			scope.view.touch.memo = null;
+		}
+
+		/* Scroll by arbitrary blocks (positive direction = right) */
+		function changeScreen(blocks) {
+			var pageWidth = getPageWidth();
 			var scrollQuantum = pageWidth * 2 / 3;
-			var offset = getOffset();
-			offset += delta * scrollQuantum;
-			var origin = $scope.view.origin;;
-			var min = -origin, max = viewWidth - pageWidth - origin;
-			/* Bounds checking */
-			if (offset > max) {
-				offset = max;
-				loadFutureDay();
-			}
-			if (offset < min) {
-				offset = min;
-				loadPastDay();
-			}
-			setOffset(offset);
+			scope.view.position.inc(blocks * scrollQuantum, false);
 		}
+
+		/* Scroll by pixels (positive direction = right) */
+		function scrollBy(delta, immediate) {
+			scope.view.position.inc(delta, immediate);
+		}
+
+		/* Scroll to the specified offset target */
+		function scrollTo(target, immediate) {
+			scope.view.position.set(target, immediate);
+		}
+
 	}
 
-})(window.angular, window._, window.moment);
+})(window.angular, window.moment, window.requestAnimationFrame);

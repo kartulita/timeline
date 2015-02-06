@@ -33,7 +33,7 @@
 				newRow();
 				prependPhantoms();
 				addItems();
-				appendPhantoms(); /* Not strictly necessary */
+				appendPhantoms();
 
 				return;
 

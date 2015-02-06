@@ -4,7 +4,7 @@
 	angular.module('battlesnake.timeline')
 		.directive('timelineDay', timelineDayDirective);
 
-	function timelineDayDirective($q) {
+	function timelineDayDirective($q, $timeout) {
 		return {
 			restrict: 'A',
 			priority: 10,
@@ -101,6 +101,14 @@
 						transclude(scope, function (clone, scope) {
 							itemsElement = clone.appendTo(element);
 						});
+					}
+					/* Delay showing day to give images time to load */
+					$timeout(showContent, 100);
+
+					return;
+
+					function showContent() {
+						element.css('visibility', 'visible');
 					}
 				}
 			}
