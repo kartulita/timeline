@@ -331,10 +331,10 @@
 		}
 
 		function resetDatePicker() {
-			scope.view.isDatePickerOpen = false;
-			scope.view.isDatePickerOpening = false;
-			scope.view.datePickerValue = scope.model.refDate.toDate();
-			$timeout.cancel(scope.view.openDatePickerTimer);
+			scope.view.datePicker.isOpen = false;
+			scope.view.datePicker.isOpening = false;
+			scope.view.datePicker.value = null;
+			$timeout.cancel(scope.view.datePicker.timer);
 		}
 
 		/* Called by the animator: updates view and triggers loading of more days if needed */
