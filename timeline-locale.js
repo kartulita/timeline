@@ -14,8 +14,8 @@
 		this.et = {
 			onAir: 'Vaata otse',
 			today: 'Täna',
-			clear: 'Eemaldama',
-			close: 'Sulgema'
+			clear: 'Eemalda',
+			close: 'Sulge'
 		};
 		this.ru = {
 			onAir: null,

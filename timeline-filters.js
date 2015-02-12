@@ -9,7 +9,7 @@
 	function timelineDateFilter(languageService, timelineLocale) {
 		var lang = languageService(timelineLocale);
 		return function (when) {
-			return when.isSame(moment(), 'day') ? lang('today') : when.format('dddd DD.MM');
+			return when.isSame(moment(), 'day') ? lang('today') : when.format('dddd DD.MM').replace(/^[a-z]/, function (c) { return c.toUpperCase(); });
 		};
 	}
 
