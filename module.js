@@ -9,7 +9,7 @@
 	 * Timeline widget
 	 *
 	 * @example
-	 * See demos/etv.html
+	 * See demos/index.html
 	 */
 	angular.module('battlesnake.timeline', ['ngTouch', 'ui.bootstrap', 'battlesnake.language']);
 

@@ -16,9 +16,11 @@
 		function connect(adapter) {
 			var source = {
 				adapter: adapter,
-				cache: {}
+				cache: {},
+				loading: {}
 			};
 			var cache = source.cache;
+			var loading = source.loading;
 
 			return {
 				getDay: getDay,
@@ -32,10 +34,20 @@
 				if (_(cache).has(key)) {
 					return cache[key];
 				}
+				/* See if data is loading already */
+				if (_(loading).has(key)) {
+					return loading[key];
+				}
 				/* Get from backend */
-				return adapter.getDay(day)
+				return loading[key] = adapter.getDay(day)
+					.then(dataLoaded)
 					.then(cacheData)
 					.catch(cacheNothing);
+
+				function dataLoaded(data) {
+					delete loading[key];
+					return data;
+				}
 
 				function cacheData(data) {
 					cache[key] = data;
