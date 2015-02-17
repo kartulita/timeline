@@ -57,12 +57,9 @@
 			datePicker: {
 				reset: resetDatePicker,
 				isOpen: false,
-				isOpening: false,
 				value: null,
-				open: openDatePicker,
-				close: closeDatePicker,
-				timer: null,
-				stateChanged: datePickerStateChanged
+				select: datePickerSelect,
+				toggle: toggleDatePicker
 			},
 			/* Touch events */
 			touch: {
@@ -101,9 +98,6 @@
 			scope.$on('dayLoaded', dayLoaded);
 			scope.$on('endOfDays', endOfDays);
 			scope.$on('setCurrentItemElement', setCurrentItemElement);
-			/* Date picker observers */
-			scope.$watch('view.datePicker.value', gotoDate);
-			scope.$watch('view.datePicker.isOpen', scope.view.datePicker.stateChanged);
 			/* Validate and load new items (if needed) on resize */
 			angular.element($window)
 				.bind('resize', scope.methods.revalidateView);
@@ -156,9 +150,9 @@
 			if (!value) {
 				return;
 			}
-			if (scope.model.refDate && !scope.model.refDate.isSame(value, 'day')) {
-				resetModel(value);
-			}
+			/* if (scope.model.refDate && !scope.model.refDate.isSame(value, 'day')) { */
+			resetModel(value);
+			/* } */
 			userHasNavigated = true;
 		}
 
@@ -274,67 +268,24 @@
 
 		/* Date picker */
 
-		function openDatePicker($event) {
-			if (scope.view.isDatePickerOpening) {
-				closeDatePicker();
-				return;
-			}
-			scope.view.datePicker.value = null;
-			scope.view.datePicker.isOpening = true;
-			scope.view.datePicker.timer = $timeout(openDatePickerNow, 200);
-			return;
-
-			function openDatePickerNow() {
-				scope.view.datePicker.isOpen = true;
-				scope.view.datePicker.timer = null;
-				var el = scope.view.mainContainer.find('.timeline-goto');
-				var dropDown = angular.element('.dropdown-menu[datepicker-popup-wrap]');
-				dropDown.css({
-					left: 0,
-					top: 0,
-					display: 'none'
-				});
-				/* 0ms to reduce flicker */
-				$timeout(delayedPositioning, 0);
-				/* 20/50/100ms since 0ms doesn't work on all browsers */
-				$timeout(delayedPositioning, 20);
-				$timeout(delayedPositioning, 50);
-				$timeout(delayedPositioning, 100);
-
-				return;
-
-				function delayedPositioning() {
-					var offset = {
-						x: el.offset().left + el.outerWidth(),
-						y: el.offset().top + el.outerHeight()
-					};
-					dropDown.css({
-						left: (offset.x - dropDown.outerWidth()) + 'px',
-						top: (offset.y) + 'px',
-						display: 'block'
-					});
-				}
-			}
-		}
-
-		function closeDatePicker() {
-			scope.view.datePicker.isOpen = false;
-			scope.view.datePicker.isOpening = false;
-			$timeout.cancel(scope.view.datePicker.timer);
-			scope.view.datePicker.timer = null;
-		}
-
-		function datePickerStateChanged(value) {
-			if (!value) {
-				closeDatePicker();
-			}
+		function datePickerSelect() {
+			gotoDate(scope.view.datePicker.value);
 		}
 
 		function resetDatePicker() {
 			scope.view.datePicker.isOpen = false;
-			scope.view.datePicker.isOpening = false;
-			scope.view.datePicker.value = null;
+			scope.view.datePicker.value = moment();
 			$timeout.cancel(scope.view.datePicker.timer);
+		}
+
+		function toggleDatePicker() {
+			var dp = scope.view.datePicker;
+			if (dp.isOpen) {
+				dp.isOpen = false;
+			} else {
+				/* Should we set the value here? (note: there is a watcher on the value */
+				dp.isOpen = true;
+			}
 		}
 
 		/* Called by the animator: updates view and triggers loading of more days if needed */

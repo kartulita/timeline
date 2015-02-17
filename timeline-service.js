@@ -31,7 +31,7 @@
 				day = moment(day);
 				var key = day.format('YYYY-MM-DD');
 				/* Check cache */
-				if (_(cache).has(key)) {
+				if ((adapter.canCache && adapter.canCache(key)) && _(cache).has(key)) {
 					return cache[key];
 				}
 				/* See if data is loading already */

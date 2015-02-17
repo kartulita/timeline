@@ -7,10 +7,12 @@
 	/* Must also be configured in the LESS file */
 	var rowCount = 2;
 
-	function timelineItemsController($scope) {
+	function timelineItemsController($scope, $timeout) {
 		var scope = $scope;
 		var element;
 		var transclude;
+
+		var debouncer;
 
 		this.init = initController;
 		return;
@@ -20,7 +22,18 @@
 			transclude = _transclude;
 
 			rebuildList();
-			scope.$on('currentChanged', rebuildList);
+			scope.$on('currentChanged', debouncedRebuildList);
+			scope.$watch('model.current', debouncedRebuildList);
+		}
+
+		function debouncedRebuildList() {
+			if (debouncer) {
+				return;
+			} else {
+				rebuildList();
+				debouncer = true;
+				$timeout(function () { debouncer = null; }, 100);
+			}
 		}
 
 		/* Rebuild the view */

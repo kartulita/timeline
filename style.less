@@ -88,10 +88,15 @@
 		font-weight: bold;
 		top: 50%;
 		/* Thanks, Maret for showing me this nice vertical-centering hack */
-		padding: 24px;
+		padding: 24px 24px;
 		margin-top: -49px;
 		transition: background 800ms ease;
 		z-index: 1000;
+
+		@media only screen and (max-width: 768px) {
+			font-size: 30px;
+			padding: 24px 12px;
+		}
 
 		&:hover {
 			background: @timeline-dark-color;

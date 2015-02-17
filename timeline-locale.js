@@ -2,27 +2,29 @@
 	'use strict';
 
 	angular.module('battlesnake.timeline')
-		.service('timelineLocale', timelineLocale);
+		.factory('timelineLocale', timelineLocale);
+
+	/*
+	 * Declared once and outside the factory since the injector hack used by
+	 * timeline-adapter would otherwise get a new instance of the translations
+	 */
+	var strings = {
+		en: {
+			playLive: 'Now playing',
+			today: 'Today',
+		},
+		et: {
+			playLive: 'Vaata otse', /* timeline-adapter in battlesnake.err modifies/decorates for radio channels */
+			today: 'Täna',
+		},
+		ru: {
+			playLive: null,
+			today: 'Сегодня',
+		}
+	}
 
 	function timelineLocale() {
-		this.en = {
-			onAir: 'Now playing',
-			today: 'Today',
-			clear: 'Clear',
-			close: 'Close'
-		};
-		this.et = {
-			onAir: 'Vaata otse',
-			today: 'Täna',
-			clear: 'Eemalda',
-			close: 'Sulge'
-		};
-		this.ru = {
-			onAir: null,
-			today: 'Сегодня',
-			clear: null,
-			close: null
-		};
+		return strings;
 	}
 
 })(window.angular);

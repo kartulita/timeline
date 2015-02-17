@@ -2,18 +2,14 @@
 <div class="timeline" ondragstart="return false;" ondrop="return false;">
 	<a href="javascript://" class="timeline-nav prev" ng-click="methods.prev()"></a>
 	<a href="javascript://" class="timeline-nav next" ng-click="methods.next()"></a>
-	<div class="timeline-goto" ng-class="{ open: view.datePicker.isOpening }">
-		<a href="javascript://" class="open-button"
-			ng-click="view.datePicker.open($event)"></a>
-		<input type="text" class="textbox" ng-model="view.datePicker.value"
-			datepicker-popup="dd.MM.yyyy" datepicker-mode="day"
-			is-open="view.datePicker.isOpen"
-			starting-day="1" init-date="new Date()" show-button-bar="true"
-			close-on-date-selection="true" datepicker-append-to-body="true"
-			current-text="{{ strings('today') }}"
-			clear-text="{{ strings('clear') }}"
-			close-text="{{ strings('close') }}"
-			disabled="disabled">
+	<div class="timeline-goto" ng-class="{ open: view.datePicker.isOpening }"
+			ng-click="view.datePicker.toggle()"
+			jqui-date-picker
+			ng-model="view.datePicker.value"
+			date-picker-active="view.datePicker.isOpen"
+			date-picker-align="top right"
+			date-picker-select="view.datePicker.select()">
+		<a href="javascript://" class="open-button"></a>
 	</div>
 	<!-- Scroll control -->
 	<div timeline-days class="timeline-days">
@@ -50,7 +46,7 @@
 							<!-- Show is now playing -->
 							<div class="current" ng-if="isCurrent(item)">
 								<span class="media-icon icomoon-play"></span>
-								{{ strings('onAir') }}
+								{{ strings('playLive') }}
 							</div>
 						</div>
 						<!-- Hover-over info -->
