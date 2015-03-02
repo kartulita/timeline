@@ -1,4 +1,4 @@
-(function (angular, _, moment) {
+(function (angular, _) {
 	'use strict';
 
 	angular.module('battlesnake.timeline')
@@ -19,4 +19,4 @@
 		}
 	}
 
-})(window.angular, window._, window.moment);
+})(window.angular, window._);

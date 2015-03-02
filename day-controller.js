@@ -1,4 +1,4 @@
-(function (angular, moment, _) {
+(function (angular, _) {
 	'use strict';
 
 	angular.module('battlesnake.timeline')
@@ -50,14 +50,20 @@
 			 * adjacent days if not already loaded.
 			 */
 			var daysToGet = [
-				day.clone().subtract(1, 'day'),
+//				day.clone().subtract(1, 'day'),
 				day,
-				day.clone().add(1, 'day')
+//				day.clone().add(1, 'day')
 			];
+			/*
+			 * TODO FIX - For now, disabled the time-zone correction stuff as it seems to be causing problems.
+			 * The first few shows on a given day are incorrect in EET.
+			 */
 			/* Map days to promises and process result */
 			scope.$emit('dayLoading');
 			$q.all(daysToGet.map(scope.api.getDay))
-				.then(filterAndSort)
+				.then(function (data) { return [].concat.apply([], data); })
+//				.then(filterData)
+				.then(sortData)
 				.then(createChildren)
 				.finally(emitLoadedEvent);
 
@@ -73,14 +79,18 @@
 				element.remove();
 			}
 
-			function filterAndSort(data) {
-				return _([].concat.apply([], data))
-					.filter(isToday)
-					.sort(momentComparator);
+			function filterData(data) {
+				return _(data)
+					.filter(isToday);
 
 				function isToday(item) {
 					return day.isSame(item.start, 'day');
 				}
+			}
+
+			function sortData(data) {
+				return _(data)
+					.sort(momentComparator);
 
 				function momentComparator(a, b) {
 					return a.start.diff(b.start);
@@ -103,8 +113,7 @@
 						itemsElement = clone.appendTo(element);
 					});
 				}
-				/* Delay showing day to give images time to load and reflow */
-				$timeout(showContent, 200);
+				showContent();
 
 				return;
 
@@ -116,4 +125,4 @@
 
 	}
 
-})(window.angular, window.moment, window._);
+})(window.angular, window._);
