@@ -16,25 +16,7 @@
 		function initController(_element, _transclude) {
 			element = _element;
 			transclude = _transclude;
-			scope.$on('scrollChanged', positionTitle);
 			reloadDay();
-		}
-
-		function positionTitle(event, offset, width) {
-			var e_l = element.position().left - offset;
-			var e_w = element.innerWidth();
-			var e_r = e_l + e_w;
-			var title = element.find('.timeline-day-title');
-			var t_w = title.find('>*').outerWidth(true);
-			if (e_l <= 0 && e_r >= t_w) {
-				title.css({ left: -e_l + 'px' });
-			} else if (e_l < 0 && e_r > 0) {
-				title.css({ left: e_w - t_w + 'px' });
-			} else if (e_l > 0) {
-				title.css({ left: 0 });
-			} else {
-				title.css({ left: e_w - t_w + 'px' });
-			}
 		}
 
 		function reloadDay() {
@@ -50,19 +32,15 @@
 			 * adjacent days if not already loaded.
 			 */
 			var daysToGet = [
-//				day.clone().subtract(1, 'day'),
+				day.clone().subtract(1, 'day'),
 				day,
-//				day.clone().add(1, 'day')
+				day.clone().add(1, 'day')
 			];
-			/*
-			 * TODO FIX - For now, disabled the time-zone correction stuff as it seems to be causing problems.
-			 * The first few shows on a given day are incorrect in EET.
-			 */
 			/* Map days to promises and process result */
 			scope.$emit('dayLoading');
 			$q.all(daysToGet.map(scope.api.getDay))
 				.then(function (data) { return [].concat.apply([], data); })
-//				.then(filterData)
+				.then(filterData)
 				.then(sortData)
 				.then(createChildren)
 				.finally(emitLoadedEvent);

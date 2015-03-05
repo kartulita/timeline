@@ -2,7 +2,6 @@
 	'use strict';
 
 	angular.module('battlesnake.timeline')
-		.factory('timelineAnimator', timelineAnimatorFactory)
 		.controller('timelineController', timelineController)
 		;
 
@@ -10,7 +9,7 @@
 		return new Date().getTime() / 1000;
 	}
 
-	function timelineController($scope, $timeout, $interval, $window, $swipe, languageService, timelineLocale, timelineAnimator, timelineService) {
+	function timelineController($scope, $timeout, $interval, $window, $swipe, languageService, timelineLocale, timelineService) {
 		var scope = $scope;
 
 		/* l10n */
@@ -44,7 +43,7 @@
 		/* (TODO: Move scrollbox logic to separate directive) */
 		scope.view = {
 			/* Animator for scroll position */
-			position: timelineAnimator(scope, scrollChanged, scrollEvent),
+			position: new TimelineAnimator(scrollChanged, scrollEvent),
 			/* X-coordinate of first item (the reference position for scrolling) */
 			origin: 0,
 			/* Reference element */
@@ -169,12 +168,14 @@
 			/* Update currently-airing */
 			updateCurrent();
 			/* Delayed until reflow */
-			$timeout(function updateOrigin() {
-				/* Set/update origin x-coordinate */
-				setOrigin(scope.view.reference.position().left);
-				/* Validation triggers updating of day-title positions */
-				scope.view.position.revalidate();
-			}, 0);
+			$timeout(updateOrigin, 0);
+		}
+
+		function updateOrigin() {
+			/* Set/update origin x-coordinate */
+			setOrigin(scope.view.reference.position().left);
+			/* Validation triggers updating of day-title positions */
+			scope.view.position.revalidate();
 		}
 
 		/* Periodically check which show is currently playing and update view */
@@ -237,6 +238,7 @@
 
 		function setCurrentItemElement(event, element) {
 			var isInitial = !scope.model.currentItemElement;
+			/* Let reflow happen first */
 			$timeout(function () { scrollToCurrentItem(isInitial); }, 0);
 			scope.model.currentItemElement = element;
 		}
@@ -291,6 +293,14 @@
 		/* Called by the animator: updates view and triggers loading of more days if needed */
 
 		function scrollChanged(current, target) {
+			if (!arguments.length) {
+				if (!scope.view.position.value) {
+					scrollToCurrentItem(true);
+					return;
+				}
+				current = scope.view.position.value.current || 0;
+				target = scope.view.position.value.target || 0;
+			}
 			var pageWidth = getPageWidth();
 			var viewWidth = getViewWidth();
 			var origin = scope.view.origin;
@@ -310,27 +320,70 @@
 			/* Load more days if needed */
 			var loadNextThreshold = pageWidth * 2;
 			if (scope.view.reference && daysLoading < 2) {
-				if (position.target < loadNextThreshold) {
-					loadPastDay();
-				}
-				if (position.target > (viewWidth - loadNextThreshold)) {
-					loadFutureDay();
-				}
+				/* Force $apply for these */
+				$timeout(function () {
+					if (position.target < loadNextThreshold) {
+						loadPastDay();
+					}
+					if (position.target > (viewWidth - loadNextThreshold)) {
+						loadFutureDay();
+					}
+				}, 0);
 			}
+			/* Store position */
+			scope.view.position.value = position;
 			/*
 			 * No longer done via ng-style as it doesn't seem to get updated
-			 * during touch events
+			 * during touch events, and as we're also running the animator
+			 * outside angular-land now to avoid excessive digests.
 			 */
 			scope.view.scrollContainer.css({ 
 				transform: 'translateX(' + (-position.current) + 'px)',
 			});
-			/* Notify children ('day': keep a day title visible) */
-			scope.$broadcast('scrollChanged', position.current, pageWidth);
-			/* Validated OK */
+			/* Notify children ('day': keep a day title visible)
+			 * Disabled as we moved this logic into this controller, see
+			 * keepAtLeastOneDayTitleInView
+			 */
+			//scope.$broadcast('scrollChanged', position.current, pageWidth);
+			keepAtLeastOneDayTitleInView();
+			/* Return valid */
 			return target;
 		}
 
+		/*
+		 * Used to be in day-controller, cound to scrollChanged broadcast, but
+		 * this required $apply to work, wrecking animation performance.
+		 */
+		function keepAtLeastOneDayTitleInView() {
+			var offset = scope.view.position.value.current;
+			var width = getPageWidth();
+			var days = scope.view.mainContainer.find('.timeline-day');
+			days.each(function () {
+				positionTitle(angular.element(this), offset, width);
+			});
+			return;
+
+			/* Ripped out of day-controller */
+			function positionTitle(element, offset, width) {
+				var e_l = element.position().left - offset;
+				var e_w = element.innerWidth();
+				var e_r = e_l + e_w;
+				var title = element.find('.timeline-day-title');
+				var t_w = title.find('>*').outerWidth(true);
+				if (e_l <= 0 && e_r >= t_w) {
+					title.css({ left: -e_l + 'px' });
+				} else if (e_l < 0 && e_r > 0) {
+					title.css({ left: e_w - t_w + 'px' });
+				} else if (e_l > 0) {
+					title.css({ left: 0 });
+				} else {
+					title.css({ left: e_w - t_w + 'px' });
+				}
+			}
+		}
+
 		function scrollEvent(event) {
+			/* Run outside angular-land */
 		}
 
 		/* High-level scroll methods */
@@ -358,7 +411,8 @@
 
 		function setOrigin(origin) {
 			scope.view.origin = origin;
-			scrollChanged();
+			keepAtLeastOneDayTitleInView();
+			//setTimeout(scrollChanged, 0);
 		}
 
 		/* Touch events */
@@ -438,125 +492,129 @@
 	}
 
 	/* TODO: Spin out into separate service/module or replace with ngAnimate */
-	function timelineAnimatorFactory($timeout) {
-		return timelineAnimator;
-		
-		function timelineAnimator(scope, onValidate, onEvent) {
-			var current = 0;
-			var target = 0;
-			var animating = false;
-			var lastFrame = 0;
+	function TimelineAnimator(onValidate, onEvent) {
+		var current = 0;
+		var target = 0;
+		var animating = false;
+		var t_last = 0;
+		var t_start, t_start_perf;
 
-			return {
-				reset: reset,
-				get: get,
-				set: set,
-				inc: inc,
-				revalidate: revalidate
-			};
+		return {
+			reset: reset,
+			get: get,
+			set: set,
+			inc: inc,
+			revalidate: revalidate
+		};
 
-			function reset() {
-				set(0, true);
+		function reset() {
+			set(0, true);
+		}
+
+		function get(immediate) {
+			return immediate ? current : target;
+		}
+
+		function set(value, immediate) {
+			value = Math.round(value);
+			if (immediate === 'animating') {
+				current = value;
+				startAnimation();
+			} else if (immediate) {
+				current = value;
+				target = value;
+				stopAnimation();
+			} else {
+				target = value;
+				startAnimation();
 			}
+			revalidate();
+			onEvent('changed', current, target);
+		}
 
-			function get(immediate) {
-				return immediate ? current : target;
+		function revalidate() {
+			var val = onValidate(current, target);
+			if (typeof val === 'number' && target !== val) {
+				target = val;
+				startAnimation();
 			}
+		}
 
-			function set(value, immediate) {
-				value = Math.round(value);
-				if (immediate === 'animating') {
-					current = value;
-					startAnimation();
-				} else if (immediate) {
-					current = value;
-					target = value;
-					stopAnimation();
-				} else {
-					target = value;
-					startAnimation();
-				}
-				revalidate();
-				onEvent('changed', current, target);
+		function inc(delta, immediate) {
+			set(get(immediate) + delta, immediate);
+		}
+
+		function requestFrame() {
+			if (requestAnimationFrame) {
+				requestAnimationFrame(function (t_abs) {
+					var t = t_abs - t_start_perf;
+					var dt = t - t_last;
+					t_last = t;
+					animateFrame(dt / 1000);
+				});
+			} else {
+				setTimeout(function () {
+					var t_abs = new Date().getTime();
+					var t = t_abs - t_start;
+					var dt = t - t_last;
+					t_last = t;
+					animateFrame(dt / 1000);
+				}, 1000/60);
 			}
+		}
 
-			function revalidate() {
-				var val = onValidate(current, target);
-				if (typeof val === 'number' && target !== val) {
-					target = val;
-					startAnimation();
-				}
+		function startAnimation() {
+			if (!animating) {
+				animating = true;
+				onEvent('start');
+				t_start = new Date().getTime();
+				t_start_perf = window.performance && window.performance.now();
+				t_last = 0;
+				requestFrame();
 			}
+		}
 
-			function inc(delta, immediate) {
-				set(get(immediate) + delta, immediate);
+		function stopAnimation() {
+			if (animating) {
+				animating = false;
+				onEvent('stop');
 			}
+		}
 
-			function requestFrame() {
-				if (requestAnimationFrame) {
-					requestAnimationFrame(function () {
-						scope.$apply(animateFrame);
-					});
-				} else {
-					$timeout(animateFrame, 15);
-				}
+		function animateFrame(dt) {
+			if (!animating) {
+				return;
 			}
-
-			function startAnimation() {
-				if (!animating) {
-					animating = true;
-					lastFrame = seconds();
-					onEvent('start');
-					requestFrame();
-				}
+			/* dx/dt = clamp(Dx * moveRate, minSpeed, maxSpeed), note: moveRate has unit /s */
+			var moveRate = 5;
+			/* Speed limits (pixels/s) */
+			var minSpeed = 100, maxSpeed = 3000;
+			/* How close we have to be to the target for scrolling to stop */
+			var stopThreshold = 1;
+			/* Geometry */
+			var direction = target === current ? 0 : target > current ? +1 : -1;
+			var delta = (target - current) * moveRate;
+			/* Enforce minimum speed */
+			var absDelta = Math.abs(delta);
+			if (absDelta === 0) {
+				stopAnimation();
+				return;
 			}
-
-			function stopAnimation() {
-				if (animating) {
-					animating = false;
-					onEvent('stop');
-				}
+			if (absDelta < minSpeed)  {
+				delta *= minSpeed / absDelta;
 			}
-
-			function animateFrame() {
-				if (!animating) {
-					return;
-				}
-				/* dx/dt = clamp(Dx * moveRate, minSpeed, maxSpeed), note: moveRate has unit /s */
-				var moveRate = 5;
-				/* Speed limits (pixels/s) */
-				var minSpeed = 100, maxSpeed = 3000;
-				/* How close we have to be to the target for scrolling to stop */
-				var stopThreshold = 1;
-				/* Dynamics */
-				var now = seconds();
-				var dt = now - lastFrame;
-				lastFrame = now;
-				/* Geometry */
-				var direction = target === current ? 0 : target > current ? +1 : -1;
-				var delta = (target - current) * moveRate;
-				/* Enforce minimum speed */
-				var absDelta = Math.abs(delta);
-				if (absDelta === 0) {
-					stopAnimation();
-					return;
-				}
-				if (absDelta < minSpeed)  {
-					delta *= minSpeed / absDelta;
-				}
-				if (absDelta > maxSpeed) {
-					delta *= maxSpeed / absDelta;
-				}
-				/* Apply change */
-				var next = current + dt * delta;
-				/* We passed or reached the target */
-				var remaining = target - next;
-				if (remaining * direction <= 0 || Math.abs(remaining) < stopThreshold) {
-					set(target, true);
-				} else {
-					set(next, 'animating');
-					requestFrame();
-				}
+			if (absDelta > maxSpeed) {
+				delta *= maxSpeed / absDelta;
+			}
+			/* Apply change */
+			var next = current + dt * delta;
+			/* We passed or reached the target */
+			var remaining = target - next;
+			if (remaining * direction <= 0 || Math.abs(remaining) < stopThreshold) {
+				set(target, true);
+			} else {
+				set(next, 'animating');
+				requestFrame();
 			}
 		}
 	}
