@@ -21,7 +21,7 @@
 			playLive: null,
 			today: 'Сегодня',
 		}
-	}
+	};
 
 	function timelineLocale() {
 		return strings;

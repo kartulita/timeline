@@ -37,25 +37,27 @@
 				day.clone().add(1, 'day')
 			];
 			/* Map days to promises and process result */
-			scope.$emit('dayLoading');
-			$q.all(daysToGet.map(scope.api.getDay))
+			$q.when(null)
+				.then(function () {
+					scope.$emit('dayLoading');
+				})
+				.then(function () {
+					return $q.all(daysToGet.map(scope.api.getDay));
+				})
+				.finally(function () {
+					scope.$emit('dayLoaded', element);
+				})
 				.then(function (data) { return [].concat.apply([], data); })
 				.then(filterData)
 				.then(sortData)
 				.then(createChildren)
-				.finally(emitLoadedEvent);
+				.catch(function () {
+					scope.$destroy();
+					element.remove();
+				})
+				;
 
 			return;
-
-			function emitLoadedEvent() {
-				scope.$emit('dayLoaded', element);
-			}
-
-			function emitFailedEvent() {
-				scope.$emit('dayLoadFailed', scope.key);
-				scope.$destroy();
-				element.remove();
-			}
 
 			function filterData(data) {
 				return _(data)
@@ -81,8 +83,7 @@
 				 * this day and notify the controller
 				 */
 				if (!data.length) {
-					emitFailedEvent();
-					return;
+					throw new Error('No data');
 				}
 				/* Store data and create subelements if needed */
 				scope.items = data;
