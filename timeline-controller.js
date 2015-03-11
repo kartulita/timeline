@@ -79,6 +79,8 @@
 		/* Has the user navigated the timeline at all */
 		var userHasNavigated = false;
 
+		var earlyFailCount = 0;
+
 		this.init = initController;
 		return;
 
@@ -95,6 +97,7 @@
 			scope.$on('adapterChanged', function () { resetModel(); });
 			scope.$on('dayLoading', dayLoading);
 			scope.$on('dayLoaded', dayLoaded);
+			scope.$on('dayLoadFailed', dayLoadFailed);
 			scope.$on('endOfDays', endOfDays);
 			scope.$on('setCurrentItemElement', setCurrentItemElement);
 			/* Validate and load new items (if needed) on resize */
@@ -111,6 +114,15 @@
 				scope.api = null;
 			}
 			scope.$broadcast('adapterChanged');
+		}
+
+		/* Emergency bailout, prevents us hammering backend with requests if days are not loading */
+		function dayLoadFailed() {
+			if (scope.model.days.length < 5 && ++earlyFailCount >= 5) {
+				scope.model.hitStart = true;
+				scope.model.hitEnd = true;
+				scope.model.days.length = 0;
+			}
 		}
 
 		/* Geometry */
@@ -143,6 +155,8 @@
 			/* Notify child scopes of changed */
 			daysChanged();
 			currentChanged();
+			/* Reset early fail count for error bailout */
+			earlyFailCount = 0;
 		}
 
 		function gotoDate(value) {
