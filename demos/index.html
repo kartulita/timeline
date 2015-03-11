@@ -20,6 +20,8 @@
 <script src="bower_components/angular-touch/angular-touch.min.js"></script>
 <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
 <script src="bower_components/angular-ui-slider/src/slider.js"></script>
+<!-- AJAX proxy for demos only -->
+<script src="../ajax-proxy/client.js"></script>
 <!-- Language -->
 <script src="../language/module.js"></script>
 <script src="../language/language-service.js"></script>
@@ -52,7 +54,7 @@
 (function (angular, less) {
 	'use strict';
 
-	angular.module('demo', ['battlesnake.timeline', 'ui.slider', 'battlesnake.err'])
+	angular.module('demo', ['battlesnake.timeline', 'ui.slider', 'battlesnake.err', 'battlesnake.ajax-proxy'])
 		.controller('demoController', demoController);
 
 	function demoController($scope, $timeout, timelineAdapterFactory, scheduleApi) {
