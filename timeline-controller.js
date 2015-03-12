@@ -2,12 +2,7 @@
 	'use strict';
 
 	angular.module('battlesnake.timeline')
-		.controller('timelineController', timelineController)
-		;
-
-	function seconds() {
-		return new Date().getTime() / 1000;
-	}
+		.controller('timelineController', timelineController);
 
 	function timelineController($scope, $timeout, $interval, $window, $swipe, languageService, timelineLocale, timelineService) {
 		var scope = $scope;
@@ -67,11 +62,22 @@
 				end: touchEnd,
 				cancel: touchCancel,
 				memo: null
-			}
+			},
+			/*  Touch events on nav buttons */
+			navTouch: {
+				start: navTouchStart,
+				end: navTouchEnd,
+				cancel: navTouchCancel,
+				memo: {
+					direction: 0,
+					timer: null,
+					start: null
+				}
+			},
+			daysLoading: daysLoading,
+			daysLoaded: daysLoaded
 		};
 
-		/* Number of days still loading */
-		var daysLoading = 0;
 		/* How far to scroll on wheel notch */
 		var screensPerWheelDelta = 0.2;
 		/* Used for "currently playing" checker */
@@ -80,6 +86,7 @@
 		var userHasNavigated = false;
 
 		var earlyFailCount = 0;
+		var disableLoading = false;
 
 		this.init = initController;
 		return;
@@ -92,13 +99,12 @@
 			scope.view.scrollContainer = scope.view.mainContainer.find('.timeline-days');
 			scope.$watch('adapter', adapterChanged);
 			/* Touch events */
-			$swipe.bind(scope.view.mainContainer, scope.view.touch, ['touch']);
+			$swipe.bind(scope.view.mainContainer, scope.view.touch, ['touch', 'mouse']);
+			$swipe.bind(element.find('.timeline-nav'), scope.view.navTouch, ['touch', 'mouse']);
 			/* Scope observers */
 			scope.$on('adapterChanged', function () { resetModel(); });
-			scope.$on('dayLoading', dayLoading);
 			scope.$on('dayLoaded', dayLoaded);
 			scope.$on('dayLoadFailed', dayLoadFailed);
-			scope.$on('endOfDays', endOfDays);
 			scope.$on('setCurrentItemElement', setCurrentItemElement);
 			/* Validate and load new items (if needed) on resize */
 			angular.element($window)
@@ -119,8 +125,7 @@
 		/* Emergency bailout, prevents us hammering backend with requests if days are not loading */
 		function dayLoadFailed() {
 			if (scope.model.days.length < 5 && ++earlyFailCount >= 5) {
-				scope.model.hitStart = true;
-				scope.model.hitEnd = true;
+				disableLoading = true;
 				scope.model.days.length = 0;
 			}
 		}
@@ -137,17 +142,23 @@
 
 		/* Model */
 
+		function makeDay(date) {
+			return {
+				date: date,
+				loading: false,
+				loaded: false,
+				failed: false
+			};
+		}
+
 		function resetModel(day) {
 			day = (day ? day : moment()).local().startOf('day');
 			/* Store reference date */
 			scope.model.refDate = day;
 			/* Array of dates of days to display */
-			scope.model.days = [day];
+			scope.model.days = [makeDay(day)];
 			/* Currently active item */
 			scope.model.current = null;
-			/* Have we hit the start or end of the series? */
-			scope.model.hitStart = false;
-			scope.model.hitEnd = false;
 			/* Notify children */
 			scope.$broadcast('modelReset');
 			/* Re-zero the view */
@@ -157,6 +168,7 @@
 			currentChanged();
 			/* Reset early fail count for error bailout */
 			earlyFailCount = 0;
+			disableLoading = false;
 		}
 
 		function gotoDate(value) {
@@ -169,12 +181,19 @@
 			userHasNavigated = true;
 		}
 
-		function dayLoading(event) {
-			daysLoading++;
+		/* Number of days that are loading */
+		function daysLoading() {
+			var days = _(scope.model.days).where({ loading: true });
+			return days ? days.length : 0;
 		}
-		
+
+		/* Number of days that have loaded */
+		function daysLoaded() {
+			var days = _(scope.model.days).where({ loaded: true });
+			return days ? days.length : 0;
+		}
+
 		function dayLoaded(event, element) {
-			daysLoading--;
 			/* Set day as reference if none has been acquired yet */
 			if (!scope.view.reference) {
 				scope.view.reference = element;
@@ -242,14 +261,6 @@
 			scope.$broadcast('currentChanged');
 		}
 
-		function endOfDays(event, end) {
-			if (end < 0) {
-				scope.model.hitStart = true;
-			} else if (end > 0) {
-				scope.model.hitEnd = true;
-			}
-		}
-
 		function setCurrentItemElement(event, element) {
 			var isInitial = !scope.model.currentItemElement;
 			/* Let reflow happen first */
@@ -260,20 +271,20 @@
 		/* Load more data */
 
 		function loadPastDay() {
-			if (scope.model.hitStart) {
+			var days = scope.model.days;
+			if (disableLoading || days.length && days[0].failed) {
 				return;
 			}
-			var days = scope.model.days;
-			days.unshift(days[0].clone().subtract(1, 'day'));
+			days.unshift(makeDay(days[0].date.clone().subtract(1, 'day')));
 			daysChanged();
 		}
 
 		function loadFutureDay() {
-			if (scope.model.hitEnd) {
+			var days = scope.model.days;
+			if (disableLoading || days.length && days[days.length - 1].failed) {
 				return;
 			}
-			var days = scope.model.days;
-			days.push(days[days.length - 1].clone().add(1, 'day'));
+			days.push(makeDay(days[days.length - 1].date.clone().add(1, 'day')));
 			daysChanged();
 		}
 
@@ -332,8 +343,8 @@
 				target: target + origin
 			};
 			/* Load more days if needed */
-			var loadNextThreshold = pageWidth * 2;
-			if (scope.view.reference && daysLoading < 2) {
+			var loadNextThreshold = pageWidth * 3;
+			if (scope.view.reference && daysLoading() < 3) {
 				/* Force $apply for these */
 				$timeout(function () {
 					if (position.target < loadNextThreshold) {
@@ -371,8 +382,8 @@
 		function keepAtLeastOneDayTitleInView() {
 			var offset = scope.view.position.value.current;
 			var width = getPageWidth();
-			var days = scope.view.mainContainer.find('.timeline-day');
-			days.each(function () {
+			var dayElements = scope.view.mainContainer.find('.timeline-day');
+			dayElements.each(function () {
 				positionTitle(angular.element(this), offset, width);
 			});
 			return;
@@ -409,11 +420,17 @@
 			scope.view.datePicker.reset();
 		}
 
-		function prevScreen() {
+		function prevScreen(event) {
+			if (event) {
+				event.preventDefault();
+			}
 			changeScreen(-1);
 		}
 
-		function nextScreen() {
+		function nextScreen(event) {
+			if (event) {
+				event.preventDefault();
+			}
 			changeScreen(+1);
 		}
 
@@ -429,7 +446,49 @@
 			//setTimeout(scrollChanged, 0);
 		}
 
-		/* Touch events */
+		/* Touch-and-hold support for navigation buttons */
+
+		function navTouchStart(r, event) {
+			if (scope.view.navTouch.memo) {
+				navTouchEnd();
+			}
+			scope.view.navTouch.memo = {
+				direction: angular.element(event.target).hasClass('prev') ? -1 : +1,
+				timer: setInterval(navTouchUpdate, 100),
+				start: new Date().getTime()
+			};
+			navTouchUpdate();
+			if (event) {
+				event.preventDefault();
+			}
+		}
+
+		function navTouchEnd(r, event) {
+			var memo = scope.view.navTouch.memo;
+			if (!memo.timer) {
+				return;
+			}
+			clearInterval(memo.timer);
+			memo.timer = null;
+			var dt = new Date().getTime() - memo.start;
+			if (dt > 400) {
+				changeScreen(0, true);
+			}
+			if (event) {
+				event.preventDefault();
+			}
+			scope.view.navTouch.memo = null;
+		}
+
+		function navTouchCancel(r, event) {
+			navTouchEnd(r, event);
+		}
+
+		function navTouchUpdate() {
+			changeScreen(scope.view.navTouch.memo.direction, true);
+		}
+
+		/* Touch events for swipe/drag in the main area */
 
 		function touchStart(r) {
 			scope.view.touch.memo = {
@@ -486,21 +545,29 @@
 		}
 
 		/* Scroll by arbitrary blocks (positive direction = right) */
-		function changeScreen(blocks) {
+		function changeScreen(blocks, rel) {
 			var pageWidth = getPageWidth();
 			var scrollQuantum = pageWidth * 2 / 3;
-			scope.view.position.inc(blocks * scrollQuantum, false);
+			scrollBy(blocks * scrollQuantum, false, rel);
 			userHasNavigated = true;
 		}
 
 		/* Scroll by pixels (positive direction = right) */
-		function scrollBy(delta, immediate) {
-			scope.view.position.inc(delta, immediate);
+		function scrollBy(delta, immediate, rel) {
+			if (rel) {
+				scope.view.position.increl(delta);
+			} else {
+				scope.view.position.inc(delta, immediate);
+			}
 		}
 
 		/* Scroll to the specified offset target */
 		function scrollTo(target, immediate) {
 			scope.view.position.set(target, immediate);
+		}
+
+		function seconds() {
+			return new Date().getTime() / 1000;
 		}
 
 	}
@@ -518,6 +585,7 @@
 			get: get,
 			set: set,
 			inc: inc,
+			increl: increl,
 			revalidate: revalidate
 		};
 
@@ -530,7 +598,6 @@
 		}
 
 		function set(value, immediate) {
-			value = Math.round(value);
 			if (immediate === 'animating') {
 				current = value;
 				startAnimation();
@@ -558,13 +625,27 @@
 			set(get(immediate) + delta, immediate);
 		}
 
+		/* Increase relative to view position, not target position */
+		function increl(delta) {
+			set(get(true) + delta, false);
+		}
+
 		function requestFrame() {
 			if (requestAnimationFrame) {
-				requestAnimationFrame(function (t_abs) {
+				/* Workaround for iPad Safari not supporting window.performance.now() */
+				var nextFrame = function (t_abs) {
 					var t = t_abs - t_start_perf;
 					var dt = t - t_last;
 					t_last = t;
 					animateFrame(dt / 1000);
+				};
+				requestAnimationFrame(function (t_start) {
+					if (t_start_perf) {
+						nextFrame(t_start);
+					} else {
+						t_start_perf = t_start;
+						requestAnimationFrame(nextFrame);
+					}
 				});
 			} else {
 				setTimeout(function () {
@@ -582,7 +663,7 @@
 				animating = true;
 				onEvent('start');
 				t_start = new Date().getTime();
-				t_start_perf = window.performance && window.performance.now();
+				t_start_perf = null;
 				t_last = 0;
 				requestFrame();
 			}
@@ -602,7 +683,7 @@
 			/* dx/dt = clamp(Dx * moveRate, minSpeed, maxSpeed), note: moveRate has unit /s */
 			var moveRate = 5;
 			/* Speed limits (pixels/s) */
-			var minSpeed = 100, maxSpeed = 3000;
+			var minSpeed = 150, maxSpeed = 1500;
 			/* How close we have to be to the target for scrolling to stop */
 			var stopThreshold = 1;
 			/* Geometry */

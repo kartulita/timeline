@@ -21,7 +21,6 @@
 			/* Event handlers */
 			scope.$on('daysChanged', updateDays);
 			scope.$on('modelReset', clearCache);
-			scope.$on('dayLoadFailed', dayLoadFailed);
 		}
 
 		/* Create elements as needed */
@@ -37,7 +36,7 @@
 				return;
 			} else {
 				cacheLine = {
-					serial: day.toDate().getTime(),
+					serial: day.date.toDate().getTime(),
 					generation: scope.model.resetCount,
 					element: null,
 					scope: null
@@ -45,7 +44,7 @@
 				dayCache[key] = cacheLine;
 			}
 			var itemScope = scope.$new();
-			itemScope.day = day.clone();
+			itemScope.day = day;
 			transclude(itemScope, function (clone, scope) {
 				scope.key = key;
 				cacheLine.element = clone;
@@ -63,12 +62,12 @@
 
 		/* Create cache key for a day (must be chronologically sortable) */
 		function dayToKey(day) {
-			return day.format('YYYY-MM-DD');
+			return day.date.format('YYYY-MM-DD');
 		}
 
 		/* Find the elements that a day should be inserted between */
 		function findDayElementPosition(day) {
-			var ticks = day.toDate().getTime();
+			var ticks = day.date.toDate().getTime();
 			var res = _(dayCache)
 				.reduce(function (memo, cacheLine) {
 					var serial = cacheLine.serial;
@@ -98,17 +97,6 @@
 				line.element.remove();
 				line.scope.$destroy();
 			});
-		}
-
-		/* Handle error and notify parent */
-		function dayLoadFailed(event, key) {
-			var keys = _(dayCache).chain().keys().sort().value();
-			if (keys[0] === key) {
-				scope.$emit('endOfDays', -1);
-			}
-			if (keys[keys.length - 1] === key) {
-				scope.$emit('endOfDays', +1);
-			}
 		}
 
 	}

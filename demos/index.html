@@ -51,7 +51,7 @@
 <script src="items-directive.js"></script>
 <!-- Demo -->
 <script>
-(function (angular, less) {
+(function (angular) {
 	'use strict';
 
 	angular.module('demo', ['battlesnake.timeline', 'ui.slider', 'battlesnake.err', 'battlesnake.ajax-proxy'])
@@ -99,12 +99,11 @@
 		}
 	}
 
-})(window.angular, window.less);
+})(window.angular);
 </script>
 <style>
 body {
 	font-family: sans-serif;
-	margin: 60px;
 }
 h1 {
 	margin-bottom: 40px;
@@ -124,19 +123,23 @@ h1 {
 	display: inline-block;
 	vertical-align: top;
 	transition: transform 200ms ease;
+	-webkit-transition: transform 200ms ease;
 }
 .color-pad.selected {
 	transform: rotate(95deg);
+	-webkit-transform: rotate(95deg);
 }
 </style>
 </head>
 <body ng-app="demo" ng-controller="demoController">
-	<h1 ng-bind="model.title"></h1>
-	<select ng-model="model.adapter" ng-options="adapter as adapter.name for adapter in adapters"></select>
+	<div class="container">
+		<h1 ng-bind="model.title"></h1>
+		<select ng-model="model.adapter" ng-options="adapter as adapter.name for adapter in adapters"></select>
+	</div>
 	<!-- Here it is! -->
 	<div timeline="model.adapter.timeline" class="kartulita" now-playing="model.nowPlaying"></div>
 	<!-- That's all there is to it!  Here are the slider controls            -->
-	<div class="form">
+	<div class="form container">
 		<label>Set "now playing"
 			<input type="text" class="form-control" ng-model="model.nowPlaying">
 		</label>

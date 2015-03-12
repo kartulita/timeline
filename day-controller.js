@@ -23,7 +23,8 @@
 			if (!scope.api) {
 				return;
 			}
-			var day = scope.day.clone();
+			var day = scope.day;
+			var date = day.date;
 			/*
 			 * We get adjacent days and filter to ensure that day groups
 			 * correspond to the local time-zone.  Since the front-end
@@ -32,26 +33,31 @@
 			 * adjacent days if not already loaded.
 			 */
 			var daysToGet = [
-				day.clone().subtract(1, 'day'),
-				day,
-				day.clone().add(1, 'day')
+				date.clone().subtract(1, 'day'),
+				date,
+				date.clone().add(1, 'day')
 			];
 			/* Map days to promises and process result */
 			$q.when(null)
 				.then(function () {
+					day.loading = true;
 					scope.$emit('dayLoading');
 				})
 				.then(function () {
 					return $q.all(daysToGet.map(scope.api.getDay));
 				})
-				.finally(function () {
-					scope.$emit('dayLoaded', element);
-				})
 				.then(function (data) { return [].concat.apply([], data); })
 				.then(filterData)
 				.then(sortData)
 				.then(createChildren)
+				.then(function () { day.loaded = true; })
+				.finally(function () {
+					day.loading = false;
+					scope.$emit('dayLoaded', element);
+				})
 				.catch(function () {
+					day.failed = true;
+					scope.$emit('dayLoadFailed');
 					scope.$destroy();
 					element.remove();
 				})
@@ -64,7 +70,7 @@
 					.filter(isToday);
 
 				function isToday(item) {
-					return day.isSame(item.start, 'day');
+					return day.date.isSame(item.start, 'day');
 				}
 			}
 
@@ -92,13 +98,8 @@
 						itemsElement = clone.appendTo(element);
 					});
 				}
-				showContent();
 
 				return;
-
-				function showContent() {
-					element.css('visibility', 'visible');
-				}
 			}
 		}
 
