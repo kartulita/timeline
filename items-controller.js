@@ -121,6 +121,7 @@
 				}
 				var itemScope = scope.$new();
 				itemScope.item = item;
+				item._isSprite = typeof item.thumbnail === 'object';
 				transclude(itemScope, function (clone, scope) {
 					addToRow(clone);
 					if (current) {

@@ -14,7 +14,8 @@
 	<!-- Scroll control -->
 	<div timeline-days class="timeline-days">
 		<!-- day in model.days -->
-		<div timeline-day class="timeline-day" ng-style="{ visibility: (view.daysLoaded() >= 3 ? 'visible' : 'hidden') }">
+		<div timeline-day class="timeline-day"
+			ng-style="{ visibility: (view.daysLoaded() >= 3 ? 'visible' : 'hidden') }">
 			<div class="timeline-day-title">
 				<span class="timeline-day-title-dims">
 					{{ day.date | timelineDate }}
@@ -31,9 +32,17 @@
 					<!-- Item (no directive needed for this) -->
 					<a timeline-item class="timeline-item" href="javascript://"
 						ng-click="methods.openItem(item)">
-						<img ng-src="{{ item.thumbnail }}" alt="{{ item.title }}"
+						<!-- Image URL -->
+						<img ng-if="!item._isSprite"
+							ng-src="{{ item.thumbnail }}"
+							alt="{{ item.title }}"
 							class="timeline-item-thumbnail"
 							ondragstart="return false;" ondrop="return false;">
+						<!-- Image is CSS sprite -->
+						<div ng-if="item._isSprite"
+							class="timeline-item-thumbnail"
+							ng-style="item.thumbnail">
+						</div>
 						<div class="media-icons timeline-item-states">
 							<!-- Playable -->
 							<div class="playable media-icon icomoon-play"
