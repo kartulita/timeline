@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Timeline demo</title>
+<base href="../">
+<meta charset="utf8">
+<link href="http://etv.err.ee/Content/less/theme/etv/bootstrap.less" rel="stylesheet">
+<!-- Dependencies -->
+<link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.css">
+<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
+<script src="bower_components/jquery-ui/ui/i18n/datepicker-en-GB.js"></script>
+<script src="bower_components/jquery-ui/ui/i18n/datepicker-et.js"></script>
+<script src="bower_components/jquery-ui/ui/i18n/datepicker-ru.js"></script>
+<script src="bower_components/moment/min/moment-with-locales.min.js"></script>
+<script src="bower_components/underscore/underscore-min.js"></script>
+<script src="bower_components/angular/angular.min.js"></script>
+<script src="bower_components/angular-touch/angular-touch.min.js"></script>
+<!-- AJAX proxy for demos only -->
+<script src="../ajax-proxy/client.js"></script>
+<!-- Language -->
+<script src="../language/module.js"></script>
+<script src="../language/language-service.js"></script>
+<!-- Date-picker -->
+<script src="../date-picker/module.js"></script>
+<script src="../date-picker/datepicker-locale.js"></script>
+<script src="../date-picker/datepicker-directive.js"></script>
+<!-- Apis -->
+<script src="../err/module.js"></script>
+<script src="../err/locale.js"></script>
+<script src="../err/apis.js"></script>
+<script src="../err/timeline-adapter.js"></script>
+<!-- Timeline -->
+<link rel="stylesheet/less" href="style.less" type="text/css">
+<script src="module.js"></script>
+<script src="timeline-template.html" type="text/ng-template"></script>
+<script src="timeline-locale.js"></script>
+<script src="timeline-service.js"></script>
+<script src="timeline-filters.js"></script>
+<script src="timeline-controller.js"></script>
+<script src="days-controller.js"></script>
+<script src="day-controller.js"></script>
+<script src="items-controller.js"></script>
+<script src="timeline-directive.js"></script>
+<script src="days-directive.js"></script>
+<script src="day-directive.js"></script>
+<script src="items-directive.js"></script>
+<!-- Demo -->
+<script>
+(function (angular) {
+	'use strict';
+
+	angular.module('demo', ['battlesnake.timeline', 'battlesnake.err', 'battlesnake.ajax-proxy'])
+		.controller('demoController', demoController)
+		.factory('httpBlocker', httpBlocker)
+		.config(function ($httpProvider) {
+			$httpProvider.interceptors.push('httpBlocker');
+		})
+		;
+	
+	var _offline = false;
+
+	function setOffline(state) {
+		_offline = state;
+	}
+
+	setOffline(true);
+
+	function httpBlocker() {
+		return {
+			request: function (config) {
+				if (_offline) {
+					console.error('XHR blocked as we\'re simulating offline mode');
+					return new Error('AJAX disabled for offline testing');
+				} else {
+					return config;
+				}
+			}
+		};
+	}
+
+	function demoController($scope, $q, timelineAdapterFactory, scheduleApi) {
+		$scope.model = {
+			title: 'Timeline demo - preloaded / server-injected data',
+			adapter: null,
+			nowPlaying: ''
+		};
+
+		var now = moment().local().startOf('day');
+		preloadDays(now.clone().subtract(28, 'day'), now.clone().add(14, 'day'))
+			.then(function (data) {
+				$scope.model.adapter = timelineAdapterFactory(scheduleApi.etv, data);
+			});
+
+		return;
+
+		function preloadDay(date) {
+			return timelineAdapterFactory(scheduleApi.etv).getDay(date);
+		}
+
+		function preloadDays(start, end) {
+			var promises = [];
+			var res = [];
+			setOffline(false);
+			for (var date = start.clone(), i = 0; !date.isAfter(end) && i < 50; date = date.clone().add(1, 'day'), i++) {
+				(function (date) {
+					promises.push(
+						preloadDay(date)
+							.then(function (data) {
+								res.push({ date: date, data: data });
+							}));
+				})(date);
+			}
+			return $q.all(promises)
+				.then(function () {
+					return res;
+				})
+				.finally(function () {
+					setOffline(true);
+				});
+		}
+	}
+
+})(window.angular);
+</script>
+<style>
+body {
+	font-family: sans-serif;
+}
+h1 {
+	margin-bottom: 40px;
+}
+</style>
+</head>
+<body ng-app="demo" ng-controller="demoController">
+	<div class="container">
+		<h1 ng-bind="model.title"></h1>
+	</div>
+	<!-- Here it is! -->
+	<div timeline="model.adapter" class="kartulita" now-playing="model.nowPlaying" ng-if="!!model.adapter"></div>
+</body>
+<script src="bower_components/less/dist/less.min.js"></script>
+</html>

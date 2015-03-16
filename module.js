@@ -11,6 +11,6 @@
 	 * @example
 	 * See demos/index.html
 	 */
-	angular.module('battlesnake.timeline', ['ngTouch', 'ui.bootstrap', 'battlesnake.language', 'battlesnake.date-picker']);
+	angular.module('battlesnake.timeline', ['ngTouch', 'battlesnake.language', 'battlesnake.date-picker']);
 
 })(window.angular);

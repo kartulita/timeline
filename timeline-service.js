@@ -22,6 +22,10 @@
 			var cache = source.cache;
 			var loading = source.loading;
 
+			_(adapter.preloaded).each(function (datum) {
+				cacheData(getKey(datum.date), datum.data);
+			});
+
 			return {
 				getDay: getDay,
 				getCurrent: getCurrent
@@ -29,7 +33,7 @@
 
 			function getDay(day) {
 				day = moment(day);
-				var key = day.format('YYYY-MM-DD');
+				var key = getKey(day);
 				/* Check cache */
 				if ((adapter.canCache && adapter.canCache(key)) && _(cache).has(key)) {
 					return cache[key];
@@ -41,23 +45,22 @@
 				/* Get from backend */
 				return loading[key] = adapter.getDay(day)
 					.then(dataLoaded)
-					.then(cacheData)
-					.catch(cacheNothing);
+					.then(function (data) { return cacheData(key, data); })
+					.catch(function () { return cacheData(key, []); });
 
 				function dataLoaded(data) {
 					delete loading[key];
 					return data;
 				}
+			}
+			
+			function getKey(date) {
+				return moment(date).format('YYYY-MM-DD');
+			}
 
-				function cacheData(data) {
-					cache[key] = data;
-					return data;
-				}
-
-				function cacheNothing() {
-					cache[key] = [];
-					return [];
-				}
+			function cacheData(key, data) {
+				cache[key] = data;
+				return data;
 			}
 
 			function getCurrent() {
