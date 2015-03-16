@@ -88,7 +88,7 @@
 		};
 
 		var now = moment().local().startOf('day');
-		preloadDays(now.clone().subtract(28, 'day'), now.clone().add(14, 'day'))
+		preloadDays(now.clone().subtract(14, 'day'), now.clone().add(14, 'day'))
 			.then(function (data) {
 				$scope.model.adapter = timelineAdapterFactory(scheduleApi.etv, data);
 			});
@@ -114,6 +114,7 @@
 			}
 			return $q.all(promises)
 				.then(function () {
+					res.alreadyMapped = true;
 					return res;
 				})
 				.finally(function () {
