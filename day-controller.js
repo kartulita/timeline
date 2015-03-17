@@ -89,7 +89,7 @@
 				 * this day and notify the controller
 				 */
 				if (!data.length) {
-					throw new Error('No data');
+					return $q.reject('No data');
 				}
 				/* Store data and create subelements if needed */
 				scope.items = data;
