@@ -18,7 +18,7 @@
 			today: 'Täna',
 		},
 		ru: {
-			playLive: null,
+			playLive: 'Прямой эфир',
 			today: 'Сегодня',
 		}
 	};
