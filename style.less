@@ -25,6 +25,9 @@
 /* Darker version of base-color */
 @timeline-dark-color: darken(@timeline-base-color, 12);
 
+/* Mouse-over color for tile */
+@timeline-hover-color: fade(@timeline-base-color, 10%);
+
 /* Size of tile */
 @timeline-item-size-l: 144px;
 @timeline-item-size-m: 96px;
@@ -108,7 +111,7 @@
 	});
 	width: 100%;
 	color: white;
-	font-family: Abel, sans-serif;
+	/* font-family: Abel, sans-serif; */
 	font-weight: normal;
 	line-height: 1;
 	font-style: normal;
@@ -304,7 +307,7 @@
 			bottom: -13px;
 			padding-top: 100px;
 			transition-delay: 300ms;
-			background: rgba(234,41,122,0.9);
+			background: @timeline-hover-color;
 			.timeline-item-title {
 				text-overflow: clip;
 				white-space: normal;
