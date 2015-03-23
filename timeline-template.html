@@ -33,14 +33,14 @@
 						ng-click="methods.openItem(item)">
 						<!-- Image URL -->
 						<img ng-if="!item._isSprite"
-							ng-src="{{ item.thumbnail }}"
+							ng-src="{{ (isCurrent(item) ? item.activeThumbnail : null) || item.thumbnail }}"
 							alt="{{ item.title }}"
 							class="timeline-item-thumbnail"
 							ondragstart="return false;" ondrop="return false;">
 						<!-- Image is CSS sprite -->
 						<div ng-if="item._isSprite"
 							class="timeline-item-thumbnail"
-							ng-style="item.thumbnail">
+							ng-style="(isCurrent(item) ? item.activeThumbnail : null) || item.thumbnail">
 						</div>
 						<div class="media-icons timeline-item-states">
 							<!-- Playable -->
