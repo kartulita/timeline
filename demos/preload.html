@@ -89,7 +89,7 @@
 		};
 
 		var now = moment().local().startOf('day');
-		preloadDays(now.clone().subtract(14, 'day'), now.clone().add(14, 'day'))
+		preloadDays(now.clone().subtract(3, 'day'), now.clone().add(3, 'day'))
 			.then(function (data) {
 				$scope.model.adapter = timelineAdapterFactory(scheduleApi.etv, data);
 			});
