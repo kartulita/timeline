@@ -348,7 +348,7 @@
 				target: target + origin
 			};
 			/* Load more days if needed */
-			var loadNextThreshold = pageWidth + 300;
+			var loadNextThreshold = pageWidth * 2 + 300;
 			if (scope.view.reference && daysLoading() <= 2 && daysLoaded() > 0) {
 				/* Force $apply for these */
 				if (position.target < loadNextThreshold) {
@@ -366,7 +366,7 @@
 			 * outside angular-land now to avoid excessive digests.
 			 */
 			scope.view.scrollContainer.css({ 
-				transform: 'translateX(' + (-position.current) + 'px)',
+				transform: 'translateX(' + (-position.current) + 'px) translateZ(0)',
 			});
 			/* Notify children ('day': keep a day title visible)
 			 * Disabled as we moved this logic into this controller, see
