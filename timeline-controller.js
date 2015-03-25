@@ -91,6 +91,12 @@
 		this.init = initController;
 		return;
 
+		/* Utility */
+
+		function $immediate(fn) {
+			$timeout(fn, 0);
+		}
+
 		/* Initialiser */
 
 		function initController(element) {
@@ -200,15 +206,13 @@
 			}
 			/* Update currently-airing */
 			updateCurrent();
-			/* Delayed until reflow */
-			$timeout(updateOrigin, 0);
+			/* Delayed until reflow and DOM generation, etc...  wish there was a simple cleaner way */
+			$timeout(updateOrigin, 100);
 		}
 
 		function updateOrigin() {
 			/* Set/update origin x-coordinate */
 			setOrigin(scope.view.reference.position().left);
-			/* Validation triggers updating of day-title positions */
-			scope.view.position.revalidate();
 		}
 
 		/* Periodically check which show is currently playing and update view */
@@ -241,14 +245,17 @@
 		}
 
 		function scrollToCurrentItem(immediate) {
-			var el = scope.model.currentItemElement;
-			if (userHasNavigated || !el) {
-				return;
-			}
-			var pageWidth = getPageWidth();
-			var el_x = el.offset().left - scope.view.scrollContainer.offset().left;
-			var scroll_dx = el_x + (el.outerWidth() - pageWidth) / 2;
-			scrollTo(scroll_dx, immediate);
+			$immediate(function doScrollToCurrentItem() {
+				var el = scope.model.currentItemElement;
+				if (userHasNavigated || !el) {
+					return;
+				}
+				var pageWidth = getPageWidth();
+				var el_x = el.offset().left - scope.view.scrollContainer.offset().left;
+				var scroll_dx = el_x + (el.outerWidth() - pageWidth) / 2;
+				scrollTo(scroll_dx, immediate);
+				debugger;
+			});
 		}
 
 		/* Observers */
@@ -263,9 +270,8 @@
 
 		function setCurrentItemElement(event, element) {
 			var isInitial = !scope.model.currentItemElement;
-			/* Let reflow happen first */
-			$timeout(function () { scrollToCurrentItem(isInitial); }, 0);
 			scope.model.currentItemElement = element;
+			scrollToCurrentItem(isInitial);
 		}
 
 		/* Load more data */
@@ -302,7 +308,6 @@
 		function resetDatePicker() {
 			scope.view.datePicker.isOpen = false;
 			scope.view.datePicker.value = moment();
-			$timeout.cancel(scope.view.datePicker.timer);
 		}
 
 		function toggleDatePicker() {
@@ -318,14 +323,6 @@
 		/* Called by the animator: updates view and triggers loading of more days if needed */
 
 		function scrollChanged(current, target) {
-			if (!arguments.length) {
-				if (!scope.view.position.value) {
-					scrollToCurrentItem(true);
-					return;
-				}
-				current = scope.view.position.value.current || 0;
-				target = scope.view.position.value.target || 0;
-			}
 			var pageWidth = getPageWidth();
 			var viewWidth = getViewWidth();
 			var origin = scope.view.origin;
@@ -346,37 +343,26 @@
 			var loadNextThreshold = pageWidth * 3;
 			if (scope.view.reference && daysLoading() < 3) {
 				/* Force $apply for these */
-				$timeout(function () {
-					if (position.target < loadNextThreshold) {
-						loadPastDay();
-					}
-					if (position.target > (viewWidth - loadNextThreshold)) {
-						loadFutureDay();
-					}
-				}, 0);
+				if (position.target < loadNextThreshold) {
+					$immediate(loadPastDay);
+				}
+				if (position.target > viewWidth - loadNextThreshold) {
+					$immediate(loadFutureDay);
+				}
 			}
 			/* Store position */
 			scope.view.position.value = position;
-			/*
-			 * No longer done via ng-style as it doesn't seem to get updated
-			 * during touch events, and as we're also running the animator
-			 * outside angular-land now to avoid excessive digests.
-			 */
+			/* Update view */
 			scope.view.scrollContainer.css({ 
 				transform: 'translateX(' + (-position.current) + 'px)',
 			});
-			/* Notify children ('day': keep a day title visible)
-			 * Disabled as we moved this logic into this controller, see
-			 * keepAtLeastOneDayTitleInView
-			 */
-			//scope.$broadcast('scrollChanged', position.current, pageWidth);
 			keepAtLeastOneDayTitleInView();
 			/* Return valid */
 			return target;
 		}
 
 		/*
-		 * Used to be in day-controller, cound to scrollChanged broadcast, but
+		 * Used to be in day-controller, bound to scrollChanged broadcast, but
 		 * this required $apply to work, wrecking animation performance.
 		 */
 		function keepAtLeastOneDayTitleInView() {
@@ -442,8 +428,9 @@
 
 		function setOrigin(origin) {
 			scope.view.origin = origin;
-			keepAtLeastOneDayTitleInView();
-			//setTimeout(scrollChanged, 0);
+			/* Validation also triggers updating of day-title positions */
+			scope.view.position.revalidate();
+			scrollToCurrentItem(true);
 		}
 
 		/* Touch-and-hold support for navigation buttons */
@@ -534,9 +521,7 @@
 				var v = ax / dt;
 				/* Distance+velocity threshold and time limit for swipe */
 				if (dt > 0 && dt < 0.3 && v > 1100 && ax > 50) {
-					$timeout(function () {
-						scope.methods.changeScreen(dx / ax);
-					}, 30);
+					$immediate(function () { scope.methods.changeScreen(dx / ax); });
 				} else if (ax > 0) {
 					touchMove(r);
 				}

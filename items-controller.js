@@ -30,9 +30,11 @@
 			if (debouncer) {
 				return;
 			} else {
-				rebuildList();
 				debouncer = true;
-				$timeout(function () { debouncer = null; }, 100);
+				$timeout(function debounced() {
+					debouncer = null;
+					rebuildList();
+				}, 30);
 			}
 		}
 
