@@ -51,15 +51,15 @@
 				.then(sortData)
 				.then(createChildren)
 				.then(function () { day.loaded = true; })
-				.finally(function () {
-					day.loading = false;
-					scope.$emit('dayLoaded', element);
-				})
 				.catch(function () {
 					day.failed = true;
 					scope.$emit('dayLoadFailed');
 					scope.$destroy();
 					element.remove();
+				})
+				.finally(function () {
+					day.loading = false;
+					scope.$emit('dayLoaded', element);
 				})
 				;
 
