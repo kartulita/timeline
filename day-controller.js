@@ -4,7 +4,7 @@
 	angular.module('battlesnake.timeline')
 		.controller('timelineDayController', timelineDayController);
 
-	function timelineDayController($scope, $q, $timeout) {
+	function timelineDayController($scope, $q) {
 		var scope = $scope;
 		var element;
 		var transclude;
