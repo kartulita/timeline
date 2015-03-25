@@ -17,7 +17,7 @@
 		<div timeline-day class="timeline-day">
 			<div class="timeline-day-title">
 				<span class="timeline-day-title-dims">
-					{{ day.date | timelineDate }}
+					{{ :: day.date | timelineDate }}
 				</span>
 			</div>
 			<!-- items = day.items -->
@@ -32,13 +32,13 @@
 					<a timeline-item class="timeline-item" href="javascript://"
 						ng-click="methods.openItem(item)">
 						<!-- Image URL -->
-						<img ng-if="!item._isSprite"
+						<img ng-if=":: !item._isSprite"
 							ng-src="{{ (isCurrent(item) ? item.activeThumbnail : null) || item.thumbnail }}"
-							alt="{{ item.title }}"
+							alt="{{ :: item.title }}"
 							class="timeline-item-thumbnail"
 							ondragstart="return false;" ondrop="return false;">
 						<!-- Image is CSS sprite -->
-						<div ng-if="item._isSprite"
+						<div ng-if=":: item._isSprite"
 							class="timeline-item-thumbnail"
 							ng-style="(isCurrent(item) ? item.activeThumbnail : null) || item.thumbnail">
 						</div>
@@ -54,16 +54,16 @@
 							<!-- Show is now playing -->
 							<div class="current" ng-if="isCurrent(item)">
 								<span class="media-icon icomoon-play"></span>
-								{{ strings('playLive') }}
+								{{ :: strings('playLive') }}
 							</div>
 						</div>
 						<!-- Hover-over info -->
 						<div class="timeline-item-header">
 							<div class="timeline-item-time">
-								{{ item.start | timelineTime }}
+								{{ :: item.start | timelineTime }}
 							</div>
 							<div class="timeline-item-title">
-								{{ item.title }}
+								{{ :: item.title }}
 							</div>
 						</div>
 					</a>

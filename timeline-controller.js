@@ -91,6 +91,12 @@
 		this.init = initController;
 		return;
 
+		/* Util */
+
+		function $immediate(fn) {
+			$timeout(fn, 0);
+		}
+
 		/* Initialiser */
 
 		function initController(element) {
@@ -201,7 +207,7 @@
 			/* Update currently-airing */
 			updateCurrent();
 			/* Delayed until reflow */
-			$timeout(updateOrigin, 0);
+			$immediate(updateOrigin);
 		}
 
 		function updateOrigin() {
@@ -264,7 +270,7 @@
 		function setCurrentItemElement(event, element) {
 			var isInitial = !scope.model.currentItemElement;
 			/* Let reflow happen first */
-			$timeout(function () { scrollToCurrentItem(isInitial); }, 0);
+			$immediate(function () { scrollToCurrentItem(isInitial); });
 			scope.model.currentItemElement = element;
 		}
 
@@ -302,7 +308,6 @@
 		function resetDatePicker() {
 			scope.view.datePicker.isOpen = false;
 			scope.view.datePicker.value = moment();
-			$timeout.cancel(scope.view.datePicker.timer);
 		}
 
 		function toggleDatePicker() {
@@ -343,17 +348,15 @@
 				target: target + origin
 			};
 			/* Load more days if needed */
-			var loadNextThreshold = pageWidth * 3;
-			if (scope.view.reference && daysLoading() < 3) {
+			var loadNextThreshold = pageWidth + 300;
+			if (scope.view.reference && daysLoading() <= 2 && daysLoaded() > 0) {
 				/* Force $apply for these */
-				$timeout(function () {
-					if (position.target < loadNextThreshold) {
-						loadPastDay();
-					}
-					if (position.target > (viewWidth - loadNextThreshold)) {
-						loadFutureDay();
-					}
-				}, 0);
+				if (position.target < loadNextThreshold) {
+					$immediate(loadPastDay);
+				}
+				if (position.target > (viewWidth - loadNextThreshold)) {
+					$immediate(loadFutureDay);
+				}
 			}
 			/* Store position */
 			scope.view.position.value = position;
