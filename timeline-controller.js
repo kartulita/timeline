@@ -399,13 +399,13 @@
 				var title = element.find('.timeline-day-title');
 				var t_w = title.find('>*').outerWidth(true);
 				if (e_l <= 0 && e_r >= t_w) {
-					title.css({ left: -e_l + 'px' });
+					title.css({ transform: 'translateX(' + (-e_l ) + 'px)' });
 				} else if (e_l < 0 && e_r > 0) {
-					title.css({ left: e_w - t_w + 'px' });
+					title.css({ transform: 'translateX(' + (e_w - t_w ) + 'px)' });
 				} else if (e_l > 0) {
-					title.css({ left: 0 });
+					title.css({ transform: 'translateX(0)' });
 				} else {
-					title.css({ left: e_w - t_w + 'px' });
+					title.css({ transform: 'translateX(' + (e_w - t_w ) + 'px)' });
 				}
 			}
 		}
