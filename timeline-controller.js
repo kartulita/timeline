@@ -206,8 +206,7 @@
 			}
 			/* Update currently-airing */
 			updateCurrent();
-			/* Delayed until reflow and DOM generation, etc...  wish there was a simple cleaner way */
-			$timeout(updateOrigin, 100);
+			$timeout(updateOrigin, 200);
 		}
 
 		function updateOrigin() {
@@ -225,7 +224,11 @@
 				});
 			}
 			var oldCurrent = scope.model.current;
-			scope.model.current = scope.api.getCurrent();
+			var newCurrent = scope.api.getCurrent();
+			if (oldCurrent && newCurrent && oldCurrent.id === newCurrent.id) {
+				return;
+			}
+			scope.model.current = newCurrent;
 			scope.model.currentItemElement = null;
 			if (!isCurrent(oldCurrent)) {
 				currentChanged();
@@ -245,17 +248,27 @@
 		}
 
 		function scrollToCurrentItem(immediate) {
-			$immediate(function doScrollToCurrentItem() {
+			if (userHasNavigated) {
+				return;
+			}
+			if (immediate) {
+				/* Ugly hack, TODO find better solution */
+				$immediate(doScrollToCurrentItem);
+			} else {
+				doScrollToCurrentItem();
+			}
+			return;
+			
+			function doScrollToCurrentItem() {
 				var el = scope.model.currentItemElement;
-				if (userHasNavigated || !el) {
+				if (!el) {
 					return;
 				}
 				var pageWidth = getPageWidth();
 				var el_x = el.offset().left - scope.view.scrollContainer.offset().left;
 				var scroll_dx = el_x + (el.outerWidth() - pageWidth) / 2;
 				scrollTo(scroll_dx, immediate);
-				debugger;
-			});
+			}
 		}
 
 		/* Observers */
@@ -548,7 +561,9 @@
 
 		/* Scroll to the specified offset target */
 		function scrollTo(target, immediate) {
-			scope.view.position.set(target, immediate);
+			$immediate(function () {
+				scope.view.position.set(target, immediate);
+			});
 		}
 
 		function seconds() {

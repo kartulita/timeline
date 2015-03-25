@@ -34,7 +34,7 @@
 				$timeout(function debounced() {
 					debouncer = null;
 					rebuildList();
-				}, 30);
+				}, 200);
 			}
 		}
 
