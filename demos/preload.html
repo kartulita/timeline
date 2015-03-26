@@ -64,17 +64,18 @@
 	var _offline = false;
 
 	function setOffline(state) {
-		_offline = state;
+		if (state !== _offline) {
+			console.log('Offline mode: ' + state);
+		}
+		_offline = !!state;
 	}
-
-	setOffline(true);
 
 	function httpBlocker() {
 		return {
 			request: function (config) {
 				if (_offline) {
-					console.error('XHR blocked as we\'re simulating offline mode');
-					return new Error('AJAX disabled for offline testing');
+					console.error('XHR blocked as we\'re simulating offline mode', decodeURIComponent(config.url), config);
+					throw new Error('AJAX disabled for offline testing');
 				} else {
 					return config;
 				}
@@ -90,7 +91,7 @@
 		};
 
 		var now = moment().local().startOf('day');
-		preloadDays(now.clone().subtract(3, 'day'), now.clone().add(3, 'day'))
+		preloadDays(now.clone().subtract(4, 'day'), now.clone().add(4, 'day'))
 			.then(function (data) {
 				$scope.model.adapter = timelineAdapterFactory(scheduleApi.etv, data);
 			});
