@@ -288,6 +288,19 @@
 					bottom: 26px - @timeline-big-item-size;
 				});
 			}
+			.timeline-item:hover .timeline-item-state-icon {
+				opacity: 0.6;
+			}
+		}
+		.timeline-item-state-icon {
+			opacity: 0;
+			margin-top: 10%;
+			transition: opacity 400ms linear;
+			text-align: center;
+			float: none;
+			.responsive({
+				font-size: calc( ((@timeline-big-item-size - 60px) * 0.6) );
+			});
 		}
 	}
 
