@@ -1,4 +1,4 @@
-(function (angular, moment) {
+(function (angular, moment, _) {
 	'use strict';
 
 	angular.module('battlesnake.timeline')
@@ -342,7 +342,6 @@
 			if (target < min) {
 				target = min;
 			}
-			var origin = scope.view.origin;
 			var position = {
 				current: current + origin,
 				target: target + origin
@@ -575,4 +574,4 @@
 
 	}
 
-})(window.angular, window.moment);
+})(window.angular, window.moment, window._);
