@@ -4,6 +4,12 @@
 	angular.module('battlesnake.timeline')
 		.controller('timelineController', timelineController);
 
+	/*
+	 * We REALLY need to move the scroll logic out to a completely separate
+	 * component (virtual-list).  This controller would be so much cleaner and
+	 * the virtual-list component would be handy to have in other places too.
+	 */
+
 	function timelineController($scope, $timeout, $interval, $window, $swipe, languageService, timelineLocale, timelineService, timelineAnimatorFactory) {
 		var scope = $scope;
 
@@ -40,9 +46,13 @@
 			/* Animator for scroll position */
 			position: timelineAnimatorFactory.create(scrollChanged, scrollEvent),
 			/* X-coordinate of first item (the reference position for scrolling) */
-			origin: 0,
+			getOrigin: getOrigin,
+			/* When origin is changed, this is updated to provide a delta */
+			originOffset: 0,
 			/* Reference element */
 			reference: null,
+			/* Center reference element (for position = zero) */
+			referenceCentered: false,
 			/* Main container for timeline */
 			mainContainer: null,
 			/* Element to scroll */
@@ -202,19 +212,12 @@
 		function dayLoaded(event, element) {
 			/* Set day as reference if none has been acquired yet */
 			if (!scope.view.reference) {
-				scope.view.reference = element;
+				setOriginElement(element, false, false);
 			}
 			/* Update currently-airing */
 			updateCurrent();
-			/* Delayed until reflow */
-			$immediate(updateOrigin);
-		}
-
-		function updateOrigin() {
-			/* Set/update origin x-coordinate */
-			setOrigin(scope.view.reference.position().left);
-			/* Validation triggers updating of day-title positions */
-			scope.view.position.revalidate();
+			/* Update scroll position */
+			updateScrollOffset();
 		}
 
 		/* Periodically check which show is currently playing and update view */
@@ -251,10 +254,7 @@
 			if (userHasNavigated || !el) {
 				return;
 			}
-			var pageWidth = getPageWidth();
-			var el_x = el.offset().left - scope.view.scrollContainer.offset().left;
-			var scroll_dx = el_x + (el.outerWidth() - pageWidth) / 2;
-			scrollTo(scroll_dx, immediate);
+			setOriginElement(el, true, true);
 		}
 
 		/* Observers */
@@ -265,6 +265,7 @@
 
 		function currentChanged() {
 			scope.$broadcast('currentChanged');
+			scrollToCurrentItem(false);
 		}
 
 		function setCurrentItemElement(event, element) {
@@ -333,7 +334,7 @@
 			}
 			var pageWidth = getPageWidth();
 			var viewWidth = getViewWidth();
-			var origin = scope.view.origin;
+			var origin = scope.view.getOrigin();
 			/* Bounds checking */
 			var min = -origin, max = viewWidth - pageWidth - origin;
 			if (target > max) {
@@ -343,38 +344,74 @@
 				target = min;
 			}
 			var position = {
-				current: current + origin,
-				target: target + origin
+				current: current,
+				target: target
 			};
-			/* Load more days if needed */
-			var loadNextThreshold = pageWidth * 2 + 300;
-			if (scope.view.reference && daysLoading() <= 2 && daysLoaded() > 0) {
-				/* Force $apply for these */
-				if (position.target < loadNextThreshold) {
-					$immediate(loadPastDay);
-				}
-				if (position.target > (viewWidth - loadNextThreshold)) {
-					$immediate(loadFutureDay);
-				}
-			}
-			/* Store position */
-			scope.view.position.value = position;
-			/*
-			 * No longer done via ng-style as it doesn't seem to get updated
-			 * during touch events, and as we're also running the animator
-			 * outside angular-land now to avoid excessive digests.
-			 */
-			scope.view.scrollContainer.css({ 
-				transform: 'translateX(' + (-position.current) + 'px) translateZ(0)',
-			});
-			/* Notify children ('day': keep a day title visible)
-			 * Disabled as we moved this logic into this controller, see
-			 * keepAtLeastOneDayTitleInView
-			 */
-			//scope.$broadcast('scrollChanged', position.current, pageWidth);
-			keepAtLeastOneDayTitleInView();
+			/* Store and update position */
+			updateScrollOffset(position);
 			/* Return valid */
 			return target;
+		}
+
+		/* Update scroll offset in view, set and store position if specified */
+		function updateScrollOffset(position) {
+			/*
+			 * We don't use angular binding/interpolation for this as it would
+			 * murder animation performance due to $digest loops running in each
+			 * frame.  Also, some bindings aren't updated during touch events
+			 * (e.g. ngStyle).
+			 */
+			if (position) {
+				/* Store position */
+				scope.view.position.value = position;
+			}
+			var current = scope.view.position.value ? scope.view.position.value.current : 0;
+			var offset = current + scope.view.getOrigin() + scope.view.originOffset;
+			/* Set position in view */
+			scope.view.scrollContainer.css({
+				transform: 'translateX(%px)'.replace('%', -offset)
+			});
+			/* Ensure at least one day title is wholly visible in the view */
+			keepAtLeastOneDayTitleInView();
+			/* Load more days if needed  */
+			ensureViewIsFilled();
+		}
+
+		/* Ensures that we have enough data in the view to fill it */
+		function ensureViewIsFilled() {
+			var pageWidth = getPageWidth();
+			var viewWidth = getViewWidth();
+			if (!scope.view.position.value) {
+				return;
+			}
+			var offset = scope.view.position.value.target + scope.view.originOffset + scope.view.getOrigin();
+			var loadNextThreshold = pageWidth + 300;
+			/* Some limits to prevent us from flooding the backend */
+			if (scope.view.reference && daysLoading() <= 2 && daysLoaded() > 0) {
+				/* Force $apply for these */
+				if (offset < loadNextThreshold) {
+					trackDeferred(loadPastDay);
+				}
+				if (offset > (viewWidth - loadNextThreshold)) {
+					trackDeferred(loadFutureDay);
+				}
+			}
+			return;
+
+			/* Prevents mass calling of the same function due to the same causes */
+			function trackDeferred(fn) {
+				if (fn.$deferredPending) {
+					return;
+				}
+				fn.$deferredPending = true;
+				$immediate(function () {
+					try {
+						fn();
+					} finally {
+						fn.$deferredPending = false;
+					}
+				});
+			}
 		}
 
 		/*
@@ -416,8 +453,9 @@
 		/* High-level scroll methods */
 
 		function resetView() {
-			scope.view.origin = 0;
+			scope.view.referenceCentered = 0;
 			scope.view.reference = null;
+			scope.view.originOffset = 0;
 			scope.view.position.reset();
 			scope.view.datePicker.reset();
 		}
@@ -442,10 +480,59 @@
 			event.preventDefault();
 		}
 
-		function setOrigin(origin) {
-			scope.view.origin = origin;
-			keepAtLeastOneDayTitleInView();
-			//setTimeout(scrollChanged, 0);
+		/*
+		 * Sets the origin element.  If one was previously set, originOffset is
+		 * adjusted so that the scroll offset (calculated in updateScrollOffset)
+		 * remains the same.  Hence we can change the origin and anchor without
+		 * affecting the final scroll offset.
+		 */
+		function setOriginElement(element, centered, rezeroOffset) {
+			/*
+			 * If an origin element is already assigned, then update the delta-
+			 * offset (originOffset) with the position difference between the
+			 * old origin and the new one.
+			 */
+			var translate = !!scope.view.reference && !rezeroOffset;
+			var oldOrigin, newOrigin;
+			if (translate) {
+				oldOrigin = getOrigin(true);
+			}
+			scope.view.reference = element;
+			scope.view.referenceCentered = centered;
+			if (rezeroOffset) {
+				scope.view.originOffset = 0;
+			}
+			if (!element) {
+				return;
+			}
+			if (translate) {
+				newOrigin = getOrigin(true);
+				scope.view.originOffset += (oldOrigin - newOrigin);
+			}
+			updateScrollOffset();
+		}
+
+		function getOrigin(absolute) {
+			/*
+			 * Could use string and el[posFn], but this should be a little
+			 * faster
+			 */
+			var posFn = absolute ? function (el) { return el.offset(); } :
+				function (el) { return el.position(); };
+			var element = scope.view.reference;
+			var centered = scope.view.referenceCentered;
+			if (!element) {
+				return 0;
+			} else {
+				var left = posFn(element).left;
+				if (!centered) {
+					return left;
+				} else {
+					var pageWidth = getPageWidth();
+					var width = element.outerWidth();
+					return left - (pageWidth - width) / 2;
+				}
+			}
 		}
 
 		/* Touch-and-hold support for navigation buttons */
