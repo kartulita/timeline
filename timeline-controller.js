@@ -1,4 +1,4 @@
-(function (angular, moment, _) {
+(function (angular, moment, _, $, window) {
 	'use strict';
 
 	angular.module('battlesnake.timeline')
@@ -122,10 +122,13 @@
 			scope.$on('dayLoaded', dayLoaded);
 			scope.$on('dayLoadFailed', dayLoadFailed);
 			scope.$on('setCurrentItemElement', setCurrentItemElement);
-			/* Validate and load new items (if needed) on resize */
-			angular.element($window)
-				.bind('resize', scope.methods.revalidateView);
+			$(window).bind('resize', function () { scope.$apply(windowResized); });
 			userHasNavigated = false;
+		}
+
+		function windowResized() {
+			/* Update scroll (in case reference element is centered */
+			updateScrollOffset();
 		}
 
 		/* Adapter */
@@ -661,4 +664,4 @@
 
 	}
 
-})(window.angular, window.moment, window._);
+})(window.angular, window.moment, window._, window.$, window);
