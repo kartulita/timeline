@@ -1,7 +1,5 @@
 <!-- Timeline -->
 <div class="timeline" ondragstart="return false;" ondrop="return false;">
-	<a href="javascript://" class="timeline-nav prev"></a>
-	<a href="javascript://" class="timeline-nav next"></a>
 	<div class="timeline-goto" ng-class="{ open: view.datePicker.isOpening }"
 			ng-click="view.datePicker.toggle()"
 			jqui-date-picker
@@ -11,65 +9,70 @@
 			date-picker-select="view.datePicker.select()">
 		<a href="javascript://" class="open-button"></a>
 	</div>
-	<!-- Scroll control -->
-	<div timeline-days class="timeline-days">
-		<!-- day in model.days -->
-		<div timeline-day class="timeline-day">
-			<div class="timeline-day-title">
-				<span class="timeline-day-title-dims">
-					{{ :: day.date | timelineDate }}
-				</span>
-			</div>
-			<!-- items = day.items -->
-			<div timeline-items items-per-row="2" current="model.current"
-				class="timeline-items">
-				<!-- item in items -->
-				<div class="timeline-item-container"
-					ng-class="{ current: isCurrent(item) }"
-					ng-swipe-left="methods.prev()"
-					ng-swipe-right="methods.next()">
-					<!-- Item (no directive needed for this) -->
-					<a timeline-item class="timeline-item" href="javascript://"
-						ng-click="methods.openItem(item)">
-						<!-- Image URL -->
-						<img ng-if=":: !item._isSprite"
-							ng-src="{{ (isCurrent(item) ? item.activeThumbnail : null) || item.thumbnail }}"
-							alt="{{ :: item.title }}"
-							class="timeline-item-thumbnail"
-							ondragstart="return false;" ondrop="return false;">
-						<!-- Image is CSS sprite -->
-						<div ng-if=":: item._isSprite"
-							class="timeline-item-thumbnail"
-							ng-style="(isCurrent(item) ? item.activeThumbnail : null) || item.thumbnail">
-						</div>
-						<div class="media-icons timeline-item-states">
-							<!-- Playable -->
-							<div class="playable media-icon icomoon-play"
-								ng-if="item.playable && !isCurrent(item)"></div>
-							<!-- Currently playing media is... -->
-							<div class="now-playing"
-								ng-if="nowPlaying && isCurrent(item)">
-								<marquee ng-bind="nowPlaying"></marquee>
+	<!-- Scroll control's container -->
+	<div class="timeline-stream-container">
+		<a href="javascript://" class="timeline-nav prev"></a>
+		<a href="javascript://" class="timeline-nav next"></a>
+		<!-- Scroll control -->
+		<div timeline-days class="timeline-days">
+			<!-- day in model.days -->
+			<div timeline-day class="timeline-day">
+				<div class="timeline-day-title">
+					<span class="timeline-day-title-dims">
+						{{ :: day.date | timelineDate }}
+					</span>
+				</div>
+				<!-- items = day.items -->
+				<div timeline-items items-per-row="2" current="model.current"
+					class="timeline-items">
+					<!-- item in items -->
+					<div class="timeline-item-container"
+						ng-class="{ current: isCurrent(item) }"
+						ng-swipe-left="methods.prev()"
+						ng-swipe-right="methods.next()">
+						<!-- Item (no directive needed for this) -->
+						<a timeline-item class="timeline-item" href="javascript://"
+							ng-click="methods.openItem(item)">
+							<!-- Image URL -->
+							<img ng-if=":: !item._isSprite"
+								ng-src="{{ (isCurrent(item) ? item.activeThumbnail : null) || item.thumbnail }}"
+								alt="{{ :: item.title }}"
+								class="timeline-item-thumbnail"
+								ondragstart="return false;" ondrop="return false;">
+							<!-- Image is CSS sprite -->
+							<div ng-if=":: item._isSprite"
+								class="timeline-item-thumbnail"
+								ng-style="(isCurrent(item) ? item.activeThumbnail : null) || item.thumbnail">
 							</div>
-							<!-- Show is now playing -->
-							<div class="current" ng-if="isCurrent(item)">
-								<span class="media-icon icomoon-play"></span>
-								{{ :: strings('playLive') }}
+							<div class="media-icons timeline-item-states">
+								<!-- Playable -->
+								<div class="playable media-icon icomoon-play"
+									ng-if="item.playable && !isCurrent(item)"></div>
+								<!-- Currently playing media is... -->
+								<div class="now-playing"
+									ng-if="nowPlaying && isCurrent(item)">
+									<marquee ng-bind="nowPlaying"></marquee>
+								</div>
+								<!-- Show is now playing -->
+								<div class="current" ng-if="isCurrent(item)">
+									<span class="media-icon icomoon-play"></span>
+									{{ :: strings('playLive') }}
+								</div>
 							</div>
-						</div>
-						<!-- Hover-over info -->
-						<div class="timeline-item-header">
-							<div class="timeline-item-time">
-								{{ :: item.start | timelineTime }}
+							<!-- Hover-over info -->
+							<div class="timeline-item-header">
+								<div class="timeline-item-time">
+									{{ :: item.start | timelineTime }}
+								</div>
+								<div class="timeline-item-title">
+									{{ :: item.title }}
+								</div>
+								<div class="timeline-item-state-icon icomoon-play"
+									ng-if="item.playable">
+								</div>
 							</div>
-							<div class="timeline-item-title">
-								{{ :: item.title }}
-							</div>
-							<div class="timeline-item-state-icon icomoon-play"
-								ng-if="item.playable">
-							</div>
-						</div>
-					</a>
+						</a>
+					</div>
 				</div>
 			</div>
 		</div>

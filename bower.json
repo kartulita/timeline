@@ -23,7 +23,7 @@
     "icomoon": "~0.0.3"
   },
   "devDependencies": {
-    "less": "~2.2.0",
+    "less": "latest",
     "jquery-ui": "~1.11.2",
     "angular-bootstrap": "~0.12.0",
     "angular-ui-slider": "angular-ui/ui-slider#~0.0.2"

@@ -3,15 +3,16 @@
  *   timeline-nav prev
  *   timeline-nav next
  *   timeline-goto
- *   timeline-days
- *     timeline-day[]
- *       timeline-day-title
- *       timeline-items
- *         timeline-items-column[]
- *           timeline-item-container[]
- *             timeline-item
- *               timeline-item-header
- *                 timeline-item-title
+ *   timeline-stream-container
+ *     timeline-days
+ *       timeline-day[]
+ *         timeline-day-title
+ *         timeline-items
+ *           timeline-items-column[]
+ *             timeline-item-container[]
+ *               timeline-item
+ *                 timeline-item-header
+ *                   timeline-item-title
  */
 
 /* Requires fontawesome */
@@ -20,6 +21,11 @@
 
 /* Background color of container */
 @timeline-background-color: #3b4257;
+@timeline-background: linear-gradient(135deg,
+	lighten(@timeline-background-color, 10%) 0%,
+	darken(@timeline-background-color, 10%) 50%,
+	lighten(@timeline-background-color, 20%) 100%
+);
 
 /* Base color for theme */
 @timeline-base-color: #ea297a;
@@ -27,8 +33,20 @@
 /* Darker version of base-color */
 @timeline-dark-color: darken(@timeline-base-color, 12);
 
-/* Mouse-over color for tile */
-@timeline-hover-color: fade(@timeline-base-color, 90%);
+/* Background color fo timeline item time/title info */
+@timeline-item-header-background-color: fade(black, 70%);
+@timeline-item-header-background-popup-color: fade(@timeline-base-color, 90%);
+
+/* Day title size */
+@timeline-day-title-height-l: 35px;
+@timeline-day-title-height-m: 33px;
+@timeline-day-title-height-s: 29px;
+@timeline-day-title-font-size-l: 27px;
+@timeline-day-title-font-size-m: 25px;
+@timeline-day-title-font-size-s: 21px;
+@timeline-day-title-margin-y-l: 6px;
+@timeline-day-title-margin-y-m: 6px;
+@timeline-day-title-margin-y-s: 4px;
 
 /* Size of tile */
 @timeline-item-size-l: 144px;
@@ -56,33 +74,200 @@
 /* Horizontal spacing between days */
 @timeline-day-spacing: 10px;
 
+/* Nav button padding and font size */
+@timeline-nav-button-padding-x-l: 24px;
+@timeline-nav-button-padding-y-l: 24px;
+@timeline-nav-button-arrow-size-l: 50px;
+@timeline-nav-button-full-height-arrow-size-l: 72px;
+
+@timeline-nav-button-padding-x-m: 24px;
+@timeline-nav-button-padding-y-m: 24px;
+@timeline-nav-button-arrow-size-m: 50px;
+@timeline-nav-button-full-height-arrow-size-m: 60px;
+
+@timeline-nav-button-padding-x-s: 12px;
+@timeline-nav-button-padding-y-s: 24px;
+@timeline-nav-button-arrow-size-s: 30px;
+@timeline-nav-button-full-height-arrow-size-s: 30px;
+
+/* Nav button: full height */
+@timeline-nav-button-full-height-l: false;
+@timeline-nav-button-full-height-m: false;
+@timeline-nav-button-full-height-s: false;
+
+/* Mixins to override for custom styling */
+
+/* Style added to timeline elemenet */
+.timeline-style() {
+	font-weight: normal;
+	line-height: 1;
+	font-style: normal;
+	text-decoration: none;
+	color: white;
+}
+
+/* Style added to navigation buttons */
+.nav-button-style {
+	color: white;
+	speak: none;
+	transition: background 800ms ease;
+	font-family: FontAwesome;
+	font-weight: bold;
+	background: fade(@timeline-base-color, 77%);
+	&:hover {
+		background: fade(@timeline-dark-color, 97%);
+		transition: none;
+	}
+
+	&.prev {
+		left: 0;
+		&:before {
+			content: '\f104';
+			text-align: right;
+		}
+	}
+
+
+	&.next {
+		right: 0;
+		&:before {
+			content: '\f105';
+			text-align: left;
+		}
+	}
+}
+
+/* Style added to day-title */
+.day-title-style() {
+	font-weight: bold;
+}
+
+/* item-header-* mixins called from within .responsive */
+
+@timeline-item-header-scale-l: 1;
+@timeline-item-header-scale-m: 0.96;
+@timeline-item-header-scale-s: 0.88;
+
+.item-header-vars(@scale) {
+	@timeline-item-header-title-size: @scale * 15px;
+	@timeline-item-header-time-size: @scale * 10px;
+	@timeline-item-header-text-padding: @scale * 4px;
+	@timeline-item-header-space-y: @scale * 1px;
+	@timeline-item-header-height: @timeline-item-header-title-size + @timeline-item-header-time-size + @timeline-item-header-text-padding * 2 + @timeline-item-header-space-y;
+}
+
+/* Style added to timeline item header */
+.item-header-style(@tile-size) {
+	.item-header-vars(@timeline-item-header-scale);
+	height: @tile-size;
+	bottom: @timeline-item-header-height - @tile-size;
+}
+
+/* Style added to timeline item header on hover */
+.item-header-popup-style() {
+	.item-header-vars(@timeline-item-header-scale);
+	bottom: -(@timeline-item-header-text-padding + @timeline-item-header-space-y);
+	padding-top: @timeline-item-size;
+	background: @timeline-item-header-background-popup-color;
+}
+
+/* Style added to timeline item header title */
+.item-title-style() {
+	.item-header-vars(@timeline-item-header-scale);
+	font-size: @timeline-item-header-title-size;
+	line-height: @timeline-item-header-title-size;
+	padding: 0 @timeline-item-header-text-padding @timeline-item-header-text-padding;
+}
+
+/* Style added to timeline item header time */
+.item-time-style() {
+	.item-header-vars(@timeline-item-header-scale);
+	font-size: @timeline-item-header-time-size;
+	line-height: @timeline-item-header-time-size;
+	padding: 0 @timeline-item-header-text-padding @timeline-item-header-text-padding;
+}
+
 /* Calculated stuff */
-.calculate-geometry(@row-count, @item-size, @item-spacing, @padding-top, @padding-bottom) {
+.calculate-geometry(@geom-size,
+	@row-count,
+	@item-size, @item-spacing, @item-header-scale,
+	@padding-top, @padding-bottom,
+	@nav-button-padding-x, @nav-button-padding-y,
+	@nav-button-arrow-size, @nav-button-full-height-arrow-size,
+	@nav-button-full-height,
+	@day-title-height, @day-title-font-size, @day-title-margin-y)
+{
+	@column-height: @row-count * (@item-size + @item-spacing) - @item-spacing;
+	@big-item-size: @column-height;
+	@day-title-full-height: @day-title-height + (2 * @day-title-margin-y);
+	@height: @column-height + @padding-top + @padding-bottom + @day-title-full-height;
+	@timeline-stream-height: @big-item-size + @day-title-full-height;
 	@timeline-row-count: @row-count;
 	@timeline-item-size: @item-size;
 	@timeline-item-spacing: @item-spacing;
+	@timeline-item-header-scale: @item-header-scale;
 	@timeline-padding-top: @padding-top;
 	@timeline-padding-bottom: @padding-bottom;
-	@timeline-column-height: @timeline-row-count * (@timeline-item-size + @timeline-item-spacing) - @timeline-item-spacing;
-	@timeline-big-item-size: @timeline-column-height;
-	@timeline-height: @timeline-column-height + @timeline-padding-top + @timeline-padding-bottom + 36px;
+	@timeline-column-height: @column-height;
+	@timeline-big-item-size: @big-item-size;
+	@timeline-height: @height;
+	@timeline-nav-button-padding-x: @nav-button-padding-x;
+	@timeline-nav-button-padding-y: @nav-button-padding-y;
+	@timeline-nav-button-arrow-size: @nav-button-arrow-size;
+	@timeline-nav-button-full-height-arrow-size: @nav-button-full-height-arrow-size;
+	@timeline-nav-button-full-height: @nav-button-full-height;
+	@timeline-day-title-height: @day-title-height;
+	@timeline-day-title-font-size: @day-title-font-size;
+	@timeline-day-title-margin-y: @day-title-margin-y;
 }
 
+/* Mixins used by .responsive to generate media-dependent variable values */
 .geometry-l(@rules) {
-	.calculate-geometry(@timeline-row-count-l, @timeline-item-size-l, @timeline-item-spacing-l, @timeline-padding-top-l, @timeline-padding-bottom-l);
+	.calculate-geometry(3,
+		@timeline-row-count-l,
+		@timeline-item-size-l, @timeline-item-spacing-l, @timeline-item-header-scale-l,
+		@timeline-padding-top-l, @timeline-padding-bottom-l,
+		@timeline-nav-button-padding-x-l, @timeline-nav-button-padding-y-l,
+		@timeline-nav-button-arrow-size-l, @timeline-nav-button-full-height-arrow-size-l,
+		@timeline-nav-button-full-height-l,
+		@timeline-day-title-height-l, @timeline-day-title-font-size-l,
+		@timeline-day-title-margin-y-l
+	);
 	@rules();
 }
 
 .geometry-m(@rules) {
-	.calculate-geometry(@timeline-row-count-m, @timeline-item-size-m, @timeline-item-spacing-m, @timeline-padding-top-m, @timeline-padding-bottom-m);
+	.calculate-geometry(2,
+		@timeline-row-count-m,
+		@timeline-item-size-m, @timeline-item-spacing-m, @timeline-item-header-scale-m,
+		@timeline-padding-top-m, @timeline-padding-bottom-m,
+		@timeline-nav-button-padding-x-m, @timeline-nav-button-padding-y-m,
+		@timeline-nav-button-arrow-size-m, @timeline-nav-button-full-height-arrow-size-m,
+		@timeline-nav-button-full-height-m,
+		@timeline-day-title-height-m, @timeline-day-title-font-size-m,
+		@timeline-day-title-margin-y-m
+	);
 	@rules();
 }
 
 .geometry-s(@rules) {
-	.calculate-geometry(@timeline-row-count-s, @timeline-item-size-s, @timeline-item-spacing-s, @timeline-padding-top-s, @timeline-padding-bottom-s);
+	.calculate-geometry(1,
+		@timeline-row-count-s,
+		@timeline-item-size-s, @timeline-item-spacing-s, @timeline-item-header-scale-s,
+		@timeline-padding-top-s, @timeline-padding-bottom-s,
+		@timeline-nav-button-padding-x-s, @timeline-nav-button-padding-y-s,
+		@timeline-nav-button-arrow-size-s, @timeline-nav-button-full-height-arrow-size-s,
+		@timeline-nav-button-full-height-s,
+		@timeline-day-title-height-s, @timeline-day-title-font-size-s,
+		@timeline-day-title-margin-y-s
+	);
 	@rules();
 }
 
+/*
+ * For each media query, sets values of media-dependent variables then calls
+ * the given rules
+ */
 .responsive(@rules) {
 	@media all {
 		.geometry-l(@rules);
@@ -95,6 +280,25 @@
 	}
 }
 
+/* Navigation buttons (vertically centered) */
+.nav-button() when (@timeline-nav-button-full-height = false) {
+	/* Thanks, Maret for showing me this nice vertical-centering hack */
+	padding: @timeline-nav-button-padding-y @timeline-nav-button-padding-x;
+	top: 50%;
+	font-size: @timeline-nav-button-arrow-size;
+	margin-top: calc(( (@timeline-nav-button-padding-y * 2 + @timeline-nav-button-arrow-size) / -2 ));
+}
+
+/* Navigation buttons (full height) */
+.nav-button() when (@timeline-nav-button-full-height = true) {
+	bottom: 0;
+	height: @timeline-column-height;
+	padding: @timeline-nav-button-padding-y @timeline-nav-button-padding-x;
+	font-size: @timeline-nav-button-full-height-arrow-size;
+	padding-top: calc(( (@timeline-column-height - @timeline-nav-button-arrow-size) / 2 ));
+	box-sizing: border-box;
+}
+
 /* Namespace so we don't clash with the old timeline */
 .kartulita {
 
@@ -104,20 +308,15 @@
 	display: block;
 	overflow-x: hidden;
 	overflow-y: hidden;
-	background: @timeline-background-color;
+	background-color: @timeline-background-color;
+	background: @timeline-background;
 	border: 0;
 	border-top: 3px solid @timeline-base-color;
+	.timeline-style();
 	.responsive({
-		padding: @timeline-padding-top 16px @timeline-padding-bottom;
+		padding: @timeline-padding-top 0 @timeline-padding-bottom;
 		height: @timeline-height;
 	});
-	width: 100%;
-	color: white;
-	/* font-family: Abel, sans-serif; */
-	font-weight: normal;
-	line-height: 1;
-	font-style: normal;
-	text-decoration: none;
 	/* Solely for the demo */
 	transition: background 800ms ease;
 
@@ -128,52 +327,25 @@
 
 	a {
 		text-decoration: none;
-		color: white;
+		color: inherit;
+	}
+
+	.timeline-stream-container {
+		position: relative;
+		overflow: hidden;
+		.responsive({
+			height: @timeline-stream-height;
+		});
 	}
 
 	.timeline-nav {
 		position: absolute;
 		display: block;
-		background: @timeline-base-color;
-		color: white;
-		speak: none;
-		font-family: FontAwesome;
-		font-size: 50px;
-		font-weight: bold;
-		top: 50%;
-		/* Thanks, Maret for showing me this nice vertical-centering hack */
-		padding: 24px 24px;
-		margin-top: -49px;
-		transition: background 800ms ease;
 		z-index: 1000;
-
-		@media only screen and (max-width: 768px) {
-			font-size: 30px;
-			padding: 24px 12px;
-		}
-
-		&:hover {
-			background: @timeline-dark-color;
-			color: white;
-			transition: none;
-		}
-
-		&.prev {
-			left: 0;
-			&:before {
-				content: '\f104';
-				text-align: right;
-			}
-		}
-
-
-		&.next {
-			right: 0;
-			&:before {
-				content: '\f105';
-				text-align: left;
-			}
-		}
+		.nav-button-style();
+		.responsive({
+			.nav-button();
+		});
 	}
 
 	.timeline-goto {
@@ -183,7 +355,6 @@
 		top: 8px;
 		right: 8px;
 		background: @timeline-base-color;
-		color: white;
 		speak: none;
 		box-sizing: content-box;
 		width: 40px;
@@ -229,10 +400,12 @@
 		display: block;
 		position: relative;
 		white-space: nowrap;
-		font-size: 22px;
-		line-height: 26px;
-		font-weight: bold;
-		margin: 6px 0;
+		.day-title-style();
+		.responsive({
+			line-height: @timeline-day-title-height;
+			font-size: @timeline-day-title-font-size;
+			margin: @timeline-day-title-margin-y 0;
+		});
 		.timeline-day-title-dims {
 			display: inline-block;
 		}
@@ -279,15 +452,19 @@
 			height: @timeline-item-size;
 			width: @timeline-item-size;
 		});
+		.timeline-item-header {
+			.responsive({
+				.item-header-style(@timeline-item-size);
+			});
+		}
 		&.current {
 			.responsive({
 				width: @timeline-big-item-size;
 				height: @timeline-big-item-size;
 			});
-			& .timeline-item-header {
+			.timeline-item-header {
 				.responsive({
-					height: @timeline-big-item-size;
-					bottom: 26px - @timeline-big-item-size;
+					.item-header-style(@timeline-big-item-size);
 				});
 			}
 			.timeline-item:hover .timeline-item-state-icon {
@@ -301,7 +478,7 @@
 			text-align: center;
 			float: none;
 			.responsive({
-				font-size: calc( ((@timeline-big-item-size - 60px) * 0.6) );
+				font-size: (@timeline-big-item-size - 60px) * 0.6;
 			});
 		}
 	}
@@ -312,55 +489,47 @@
 		overflow: hidden;
 		width: 100%;
 		height: 100%;
-		background: rgba(0,0,0,0.3);
+		background: @timeline-item-header-background-color;
 		/* Originally wrote this for wireframing, but it looks nice on final too */
 		/* border: 1px solid rgba(255,255,255,0.3); */
 		&.phantom {
 			visibility: hidden;
 		}
 		&:hover .timeline-item-header {
-			bottom: -13px;
-			padding-top: 100px;
-			transition-delay: 300ms;
-			background: @timeline-hover-color;
+			.responsive({
+				.item-header-popup-style();
+			});
+			background: @timeline-item-header-background-popup-color;
 			.timeline-item-title {
 				text-overflow: clip;
 				white-space: normal;
-				overflow: visible;
 			}
 		}
 	}
 
 	.timeline-item-header {
-		background: rgba(0,0,10,0.4);
-		padding-top: 10px;
-		position: absolute;
-		left: 0;
-		right: 0;
-		.responsive({
-			height: @timeline-item-size;
-			bottom: (27px - @timeline-item-size);
-		});
-		transition: all 400ms ease-in-out;
-		transition-delay: 400ms;
-		z-index: 100;
+		background: @timeline-item-header-background-color;
 		box-sizing: content-box;
+		padding-top: 6px;
+		position: absolute;
+		transition: bottom 160ms ease-in-out, padding 160ms ease-in-out, background 160ms ease-in-out;
+		width: 100%;
+		z-index: 100;
 		.timeline-item-title {
 			text-overflow: ellipsis;
 			white-space: nowrap;
 			overflow: hidden;
-			font-size: 14px;
-			line-height: 18px;
-			margin-top: -3px;
-			padding: 0 4px 4px;
-			font-weight: bold;
+			.responsive({
+				.item-title-style();
+			});
 		}
 
 		.timeline-item-time {
-			font-size: 10px;
-			line-height: 16px;
-			margin-top: -6px;
-			padding: 0 4px;
+			white-space: nowrap;
+			overflow: hidden;
+			.responsive({
+				.item-time-style();
+			});
 		}
 	}
 

@@ -77,7 +77,8 @@
 			itemSpacing: 1,
 			daySpacing: 1,
 			baseColor: '#ea297a',
-			backgroundColor: '#3b4257'
+			backgroundColor: '#3b4257',
+			navButtonFullHeight: false
 		};
 		$scope.colors = ['#ea297a', '#3b97a4', '#f58537', '#f7931e', '#ba1e1e', '#3b4257', '#353e43'];
 		$scope.$watch('less', refreshLess, true);
@@ -87,11 +88,28 @@
 		function refreshLess() {
 			var vars = _($scope.less).chain()
 				.map(function (v, k) {
-					return [
-						'timeline-' + k.replace(/[A-Z]/g, function (c) { return '-' + c.toLowerCase(); }),
-						typeof v === 'number' ? v*8 + 'px' : v
-					];
+					var key = 'timeline-' +
+						k.replace(/[A-Z]/g, function (c) {
+							return '-' + c.toLowerCase();
+						});
+					if (key.match(/-color$/)) {
+						return [[key, v]];
+					} else if (typeof v === 'number') {
+						return [
+							[key + '-l', v * 8 + 'px'],
+							[key + '-m', v * 6 + 'px'],
+							[key + '-s', v * 4 + 'px']
+						];
+					} else {
+						v = String(v);
+						return [
+							[key + '-l', v],
+							[key + '-m', v],
+							[key + '-s', v]
+						];
+					}
 				})
+				.flatten(true)
 				.object()
 				.value();
 			if (less && less.modifyVars) {
@@ -154,6 +172,9 @@ h1 {
 		</label>
 		<label>Day spacing
 			<div min="0" max="4" ng-model="less.daySpacing" ui-slider></div>
+		</label>
+		<label>Full-height navigation buttons<br/>
+			<input type="checkbox" ng-model="less.navButtonFullHeight" ng-true-value="true" ng-false-value="false">
 		</label>
 		<label>Background colour<br/>
 			<div class="color-pad" ng-repeat="color in colors" ng-style="{ 'background-color': color }" ng-click="less.backgroundColor = color" ng-class="{ selected: (less.backgroundColor === color) }"></div>
