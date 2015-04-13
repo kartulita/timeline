@@ -356,6 +356,13 @@
 			return target;
 		}
 
+		/* Gets the absolute scroll offset */
+		function getScrollOffset() {
+			var current = scope.view.position.value ? scope.view.position.value.current : 0;
+			var offset = current + scope.view.getOrigin() + scope.view.originOffset;
+			return offset;
+		}
+
 		/* Update scroll offset in view, set and store position if specified */
 		function updateScrollOffset(position) {
 			/*
@@ -368,14 +375,13 @@
 				/* Store position */
 				scope.view.position.value = position;
 			}
-			var current = scope.view.position.value ? scope.view.position.value.current : 0;
-			var offset = current + scope.view.getOrigin() + scope.view.originOffset;
+			var offset = getScrollOffset();
+			/* Ensure at least one day title is wholly visible in the view */
+			keepAtLeastOneDayTitleInView();
 			/* Set position in view */
 			scope.view.scrollContainer.css({
 				transform: 'translateX(%px)'.replace('%', -offset)
 			});
-			/* Ensure at least one day title is wholly visible in the view */
-			keepAtLeastOneDayTitleInView();
 			/* Load more days if needed  */
 			ensureViewIsFilled();
 		}
@@ -422,28 +428,40 @@
 		 * this required $apply to work, wrecking animation performance.
 		 */
 		function keepAtLeastOneDayTitleInView() {
-			var offset = scope.view.position.value.current;
+			var offset = getScrollOffset();
 			var width = getPageWidth();
 			var dayElements = scope.view.mainContainer.find('.timeline-day');
 			dayElements.each(function () {
-				positionTitle(angular.element(this), offset, width);
+				updateTitlePosition(angular.element(this), offset, width);
 			});
 			return;
 
 			/* Ripped out of day-controller */
-			function positionTitle(element, offset, width) {
+			function updateTitlePosition(element, offset, width) {
 				var e_l = element.position().left - offset;
 				var e_w = element.innerWidth();
 				var e_r = e_l + e_w;
 				var title = element.find('.timeline-day-title');
-				var t_w = title.find('>*').outerWidth(true);
+				var t_w = title.find(':first-child').outerWidth(true);
+					
+				/*     OFF-LEFT | IN VIEW | OFF-RIGHT */
+				/* 1.        <--|title--> |           */
+				/* 2.    <-----t|tle>     |           */
+				/* 3.           | <title--|-->        */
+				/* 3.           |     <tit|e----->    */
+				/* 3.           |         | <title... */
+				/* 4. ...title> |         |           */
 				if (e_l <= 0 && e_r >= t_w) {
+					/* Case 1 */
 					title.css({ transform: 'translateX(' + (-e_l ) + 'px)' });
 				} else if (e_l < 0 && e_r > 0) {
-					title.css({ transform: 'translateX(' + (e_w - t_w ) + 'px)' });
+					/* Case 2 */
+					title.css({ transform: 'translateX(' + (e_w - t_w) + 'px)' });
 				} else if (e_l > 0) {
+					/* Case 3 */
 					title.css({ transform: 'translateX(0)' });
 				} else {
+					/* Case 4 */
 					title.css({ transform: 'translateX(' + (e_w - t_w ) + 'px)' });
 				}
 			}
