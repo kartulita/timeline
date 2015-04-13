@@ -11,7 +11,6 @@
 			controller: 'timelineController',
 			scope: {
 				adapter: '=timeline',
-				nowPlaying: '=',
 				onOpenItem: '&timelineOpenItem',
 			},
 			templateUrl: 'timeline-template.html',

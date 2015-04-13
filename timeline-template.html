@@ -48,12 +48,7 @@
 								<!-- Playable -->
 								<div class="playable media-icon icomoon-play"
 									ng-if="item.playable && !isCurrent(item)"></div>
-								<!-- Currently playing media is... -->
-								<div class="now-playing"
-									ng-if="nowPlaying && isCurrent(item)">
-									<marquee ng-bind="nowPlaying"></marquee>
-								</div>
-								<!-- Show is now playing -->
+								<!-- Show is currently playing: show play button -->
 								<div class="current" ng-if="isCurrent(item)">
 									<span class="media-icon icomoon-play"></span>
 									{{ :: strings('playLive') }}
