@@ -70,7 +70,8 @@
 		$scope.model = {
 			title: 'Timeline demo',
 			adapter: null,
-			nowPlaying: ''
+			nowPlaying: '',
+			fullWidth: true
 		};
 		$scope.less = {
 			itemSize: 18,
@@ -158,9 +159,14 @@ h1 {
 		<select ng-model="model.adapter" ng-options="adapter as adapter.name for adapter in adapters"></select>
 	</div>
 	<!-- Here it is! -->
-	<div timeline="model.adapter.timeline" class="kartulita" now-playing="model.nowPlaying"></div>
+	<div class="container" ng-class="{ 'full-width': model.fullWidth }">
+		<div timeline="model.adapter.timeline" class="kartulita row" now-playing="model.nowPlaying"></div>
+	</div>
 	<!-- That's all there is to it!  Here are the slider controls            -->
 	<div class="form container">
+		<label>Full-width timeline<br/>
+			<input type="checkbox" ng-model="model.fullWidth" ng-true-value="true" ng-false-value="false">
+		</label>
 		<label>Set "now playing"
 			<input type="text" class="form-control" ng-model="model.nowPlaying">
 		</label>
