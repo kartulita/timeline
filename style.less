@@ -116,6 +116,8 @@
 @timeline-goto-button-padding-m: 6px;
 @timeline-goto-button-padding-s: 4px;
 
+.kartulita .timeline {
+
 /* Calculated stuff */
 .calculate-geometry(@geom-size,
 	@row-count,
@@ -334,285 +336,279 @@
 
 /* Stylesheet commences */
 
-/* Namespace so we don't clash with the old timeline */
-.kartulita {
+box-sizing: border-box;
+position: relative;
+display: block;
+overflow-x: hidden;
+overflow-y: hidden;
+background-color: (@timeline-background-color);
+background: (@timeline-background);
+border: 0;
+.timeline-style();
+.responsive({
+	padding: (@timeline-padding-top) 0 (@timeline-padding-bottom);
+	height: (@timeline-height);
+});
+/* Solely for the demo */
+transition: background 800ms ease;
 
-.timeline {
-	box-sizing: border-box;
+&, * {
+	user-select: none;
+	-moz-user-select: none;
+}
+
+a {
+	text-decoration: none;
+	color: inherit;
+}
+
+.timeline-stream-container {
 	position: relative;
-	display: block;
-	overflow-x: hidden;
-	overflow-y: hidden;
-	background-color: (@timeline-background-color);
-	background: (@timeline-background);
-	border: 0;
-	.timeline-style();
+	overflow: hidden;
 	.responsive({
-		padding: (@timeline-padding-top) 0 (@timeline-padding-bottom);
-		height: (@timeline-height);
+		height: (@timeline-stream-height);
 	});
-	/* Solely for the demo */
-	transition: background 800ms ease;
+}
 
-	&, * {
-		user-select: none;
-		-moz-user-select: none;
-	}
+.timeline-nav {
+	position: absolute;
+	display: block;
+	z-index: 1000;
+	.nav-button-style();
+	.responsive({
+		.nav-button();
+	});
+}
 
-	a {
-		text-decoration: none;
-		color: inherit;
-	}
-
-	.timeline-stream-container {
-		position: relative;
-		overflow: hidden;
-		.responsive({
-			height: (@timeline-stream-height);
-		});
-	}
-
-	.timeline-nav {
-		position: absolute;
+.timeline-goto {
+	margin: 0;
+	position: absolute;
+	box-sizing: content-box;
+	.responsive({
+		line-height: (@timeline-goto-button-icon-size);
+		top: (@timeline-goto-button-margin);
+		right: (@timeline-goto-button-margin);
+		width: (@timeline-goto-button-size);
+		height: (@timeline-goto-button-size);
+	});
+	background: (@timeline-base-color);
+	speak: none;
+	white-space: nowrap;
+	overflow: hidden;
+	z-index: 100;
+	.open-button:before {
+		font-family: FontAwesome;
+		font-weight: normal;
+		text-align: center;
+		content: '\f073';
 		display: block;
-		z-index: 1000;
-		.nav-button-style();
-		.responsive({
-			.nav-button();
-		});
-	}
-
-	.timeline-goto {
-		margin: 0;
 		position: absolute;
+		left: 0px;
+		top: 0px;
 		box-sizing: content-box;
 		.responsive({
+			font-size: (@timeline-goto-button-icon-size);
 			line-height: (@timeline-goto-button-icon-size);
-			top: (@timeline-goto-button-margin);
-			right: (@timeline-goto-button-margin);
-			width: (@timeline-goto-button-size);
-			height: (@timeline-goto-button-size);
+			height: (@timeline-goto-button-icon-size);
+			width: (@timeline-goto-button-icon-size);
+			padding: (@timeline-goto-button-padding);
 		});
-		background: (@timeline-base-color);
-		speak: none;
-		white-space: nowrap;
-		overflow: hidden;
-		z-index: 100;
-		.open-button:before {
-			font-family: FontAwesome;
-			font-weight: normal;
-			text-align: center;
-			content: '\f073';
-			display: block;
-			position: absolute;
-			left: 0px;
-			top: 0px;
-			box-sizing: content-box;
-			.responsive({
-				font-size: (@timeline-goto-button-icon-size);
-				line-height: (@timeline-goto-button-icon-size);
-				height: (@timeline-goto-button-icon-size);
-				width: (@timeline-goto-button-icon-size);
-				padding: (@timeline-goto-button-padding);
-			});
-		}
-		.textbox {
-			display: none;
-		}
 	}
+	.textbox {
+		display: none;
+	}
+}
 
-	.timeline-days {
+.timeline-days {
+	display: inline-block;
+	position: relative;
+	white-space: nowrap;
+	overflow: hidden;
+	z-index: 1;
+}
+
+.timeline-day {
+	display: inline-block;
+	margin: 0 (@timeline-day-spacing) 0;
+}
+
+.timeline-day-title {
+	display: block;
+	position: relative;
+	white-space: nowrap;
+	.day-title-style();
+	.responsive({
+		line-height: (@timeline-day-title-height);
+		font-size: (@timeline-day-title-font-size);
+		margin: (@timeline-day-title-margin-y) 0;
+	});
+	.timeline-day-title-dims {
 		display: inline-block;
-		position: relative;
-		white-space: nowrap;
-		overflow: hidden;
-		z-index: 1;
 	}
+}
 
-	.timeline-day {
-		display: inline-block;
-		margin: 0 (@timeline-day-spacing) 0;
+.timeline-items {
+	/*
+	 * Flexbox doesn't auto-grow-to-fit in cross-axis direction so we can't just
+	 * use a simple [ display: flex; flex-flow: column wrap ] here
+	 */
+	overflow: hidden;
+	.responsive({ height: (@timeline-column-height); });
+	/*
+	 * Override CSS from old timeline (which is not namespaced)
+	 */
+	position: static;
+	left: auto;
+	top: auto;
+	width: auto;
+	height: auto;
+	vertical-align: top;
+}
+
+.timeline-items-column {
+	display: inline-block;
+	vertical-align: top;
+	.responsive({
+		margin-top: (-@timeline-item-spacing);
+		margin-bottom: (-@timeline-item-spacing);
+		margin-left: 0;
+		margin-right: (@timeline-item-spacing);
+	});
+	&:last-child {
+		margin-right: 0;
 	}
+}
 
-	.timeline-day-title {
-		display: block;
-		position: relative;
-		white-space: nowrap;
-		.day-title-style();
+.timeline-item-container {
+	box-sizing: border-box;
+	display: block;
+	.responsive({
+		margin-top: (@timeline-item-spacing);
+		margin-bottom: (@timeline-item-spacing);
+		height: (@timeline-item-size);
+		width: (@timeline-item-size);
+	});
+	.timeline-item-header {
 		.responsive({
-			line-height: (@timeline-day-title-height);
-			font-size: (@timeline-day-title-font-size);
-			margin: (@timeline-day-title-margin-y) 0;
+			.item-header-style(@timeline-item-size);
 		});
-		.timeline-day-title-dims {
-			display: inline-block;
-		}
 	}
-
-	.timeline-items {
-		/*
-		 * Flexbox doesn't auto-grow-to-fit in cross-axis direction so we can't just
-		 * use a simple [ display: flex; flex-flow: column wrap ] here
-		 */
-		overflow: hidden;
-		.responsive({ height: (@timeline-column-height); });
-		/*
-		 * Override CSS from old timeline (which is not namespaced)
-		 */
-		position: static;
-		left: auto;
-		top: auto;
-		width: auto;
-		height: auto;
-		vertical-align: top;
-	}
-
-	.timeline-items-column {
-		display: inline-block;
-		vertical-align: top;
+	&.current {
 		.responsive({
-			margin-top: (-@timeline-item-spacing);
-			margin-bottom: (-@timeline-item-spacing);
-			margin-left: 0;
-			margin-right: (@timeline-item-spacing);
-		});
-		&:last-child {
-			margin-right: 0;
-		}
-	}
-
-	.timeline-item-container {
-		box-sizing: border-box;
-		display: block;
-		.responsive({
-			margin-top: (@timeline-item-spacing);
-			margin-bottom: (@timeline-item-spacing);
-			height: (@timeline-item-size);
-			width: (@timeline-item-size);
+			width: (@timeline-big-item-size);
+			height: (@timeline-big-item-size);
 		});
 		.timeline-item-header {
 			.responsive({
-				.item-header-style(@timeline-item-size);
+				.item-header-style(@timeline-big-item-size);
 			});
 		}
-		&.current {
-			.responsive({
-				width: (@timeline-big-item-size);
-				height: (@timeline-big-item-size);
-			});
-			.timeline-item-header {
-				.responsive({
-					.item-header-style(@timeline-big-item-size);
-				});
-			}
-			.timeline-item:hover .timeline-item-state-icon {
-				opacity: 0.6;
-			}
-		}
-		.timeline-item-state-icon {
-			opacity: 0;
-			margin-top: 10%;
-			transition: opacity 400ms linear;
-			text-align: center;
-			float: none;
-			.responsive({
-				font-size: ((@timeline-big-item-size - 60px) * 0.6);
-			});
+		.timeline-item:hover .timeline-item-state-icon {
+			opacity: 0.6;
 		}
 	}
-
-	.timeline-item {
-		position: relative;
-		display: block;
-		overflow: hidden;
-		width: 100%;
-		height: 100%;
-		background: (@timeline-item-header-background-color);
-		/* Originally wrote this for wireframing, but it looks nice on final too */
-		/* border: 1px solid rgba(255,255,255,0.3); */
-		&.phantom {
-			visibility: hidden;
-		}
-		&:hover .timeline-item-header {
-			.responsive({
-				.item-header-popup-style();
-			});
-			background: (@timeline-item-header-background-popup-color);
-			.timeline-item-title {
-				text-overflow: clip;
-				white-space: normal;
-			}
-		}
+	.timeline-item-state-icon {
+		opacity: 0;
+		margin-top: 10%;
+		transition: opacity 400ms linear;
+		text-align: center;
+		float: none;
+		.responsive({
+			font-size: ((@timeline-big-item-size - 60px) * 0.6);
+		});
 	}
+}
 
-	.timeline-item-header {
-		background: (@timeline-item-header-background-color);
-		box-sizing: content-box;
-		padding-top: 6px;
-		position: absolute;
-		transition: bottom 160ms ease-in-out, padding 160ms ease-in-out, background 160ms ease-in-out;
-		width: 100%;
-		z-index: 100;
+.timeline-item {
+	position: relative;
+	display: block;
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+	background: (@timeline-item-header-background-color);
+	/* Originally wrote this for wireframing, but it looks nice on final too */
+	/* border: 1px solid rgba(255,255,255,0.3); */
+	&.phantom {
+		visibility: hidden;
+	}
+	&:hover .timeline-item-header {
+		.responsive({
+			.item-header-popup-style();
+		});
+		background: (@timeline-item-header-background-popup-color);
 		.timeline-item-title {
-			text-overflow: ellipsis;
-			white-space: nowrap;
-			overflow: hidden;
-			.responsive({
-				.item-title-style();
-			});
-		}
-
-		.timeline-item-time {
-			white-space: nowrap;
-			overflow: hidden;
-			.responsive({
-				.item-time-style();
-			});
+			text-overflow: clip;
+			white-space: normal;
 		}
 	}
+}
 
-	.timeline-item-thumbnail {
-		display: block;
+.timeline-item-header {
+	background: (@timeline-item-header-background-color);
+	box-sizing: content-box;
+	padding-top: 6px;
+	position: absolute;
+	transition: bottom 160ms ease-in-out, padding 160ms ease-in-out, background 160ms ease-in-out;
+	width: 100%;
+	z-index: 100;
+	.timeline-item-title {
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		overflow: hidden;
+		.responsive({
+			.item-title-style();
+		});
+	}
+
+	.timeline-item-time {
+		white-space: nowrap;
+		overflow: hidden;
+		.responsive({
+			.item-time-style();
+		});
+	}
+}
+
+.timeline-item-thumbnail {
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: 0;
+	padding: 0;
+	margin: 0;
+	z-index: 10;
+}
+
+.timeline-item-states {
+	z-index: 50;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+
+	.playable {
 		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		border: 0;
-		padding: 0;
-		margin: 0;
-		z-index: 10;
+		top: 8px;
+		left: 8px;
 	}
 
-	.timeline-item-states {
-		z-index: 50;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-
-		.playable {
-			position: absolute;
-			top: 8px;
-			left: 8px;
-		}
-
-		.current {
-			display: inline-block;
-			float: left;
-			clear: both;
-			background-color: (@timeline-base-color);
-			color: white;
-			padding: 8px;
-			.media-icon {
-				vertical-align: middle;
-				margin-top: -5px;
-				margin-right: 6px;
-				font-size: 22px;
-				box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
-				float: none;
-			}
-
+	.current {
+		display: inline-block;
+		float: left;
+		clear: both;
+		background-color: (@timeline-base-color);
+		color: white;
+		padding: 8px;
+		.media-icon {
+			vertical-align: middle;
+			margin-top: -5px;
+			margin-right: 6px;
+			font-size: 22px;
+			box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
+			float: none;
 		}
 
 	}
