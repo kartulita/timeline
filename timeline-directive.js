@@ -13,7 +13,8 @@
 				adapter: '=timeline',
 				onOpenItem: '&timelineOpenItem',
 				initialDate: '@timelineInitialDate',
-				groupBy: '@timelineGroupBy'
+				groupBy: '@timelineGroupBy',
+				noCalendar: '@timelineNoCalendar'
 
 			},
 			templateUrl: 'timeline-template.html',

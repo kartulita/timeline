@@ -2,6 +2,7 @@
 <div class="timeline" ondragstart="return false;" ondrop="return false;">
 	<div class="timeline-goto" ng-class="{ open: view.datePicker.isOpening }"
 			ng-click="view.datePicker.toggle()"
+			ng-if="!noCalender"
 			jqui-date-picker
 			ng-model="view.datePicker.value"
 			date-picker-active="view.datePicker.isOpen"
