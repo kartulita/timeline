@@ -23,7 +23,6 @@
 
 			rebuildList();
 			scope.$on('currentChanged', debouncedRebuildList);
-			scope.$watch('model.current', debouncedRebuildList);
 		}
 
 		function debouncedRebuildList() {
@@ -54,9 +53,6 @@
 
 			/* Get index of currently playing item (or -1 if none found) */
 			function getCurrentIndex() {
-				if (!scope.model.current) {
-					return -1;
-				}
 				for (var i = 0; i < items.length; i++) {
 					if (scope.isCurrent(items[i])) {
 						return i;
@@ -115,7 +111,7 @@
 
 			/* Low-level: add item */
 			function addItem(item) {
-				var current = item === scope.model.current;
+				var current = scope.isCurrent(item);
 				if (current) {
 					newRow();
 				}

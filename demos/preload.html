@@ -92,25 +92,25 @@
 		};
 
 		var now = moment().local().startOf('day');
-		preloadDays(now.clone().subtract(4, 'day'), now.clone().add(4, 'day'))
+		preloadGroups(now.clone().subtract(4, 'day'), now.clone().add(4, 'day'))
 			.then(function (data) {
 				$scope.model.adapter = timelineAdapterFactory(scheduleApi.etv, data);
 			});
 
 		return;
 
-		function preloadDay(date) {
-			return timelineAdapterFactory(scheduleApi.etv).getDay(date);
+		function preloadGroup(date) {
+			return timelineAdapterFactory(scheduleApi.etv).getGroup(date);
 		}
 
-		function preloadDays(start, end) {
+		function preloadGroups(start, end) {
 			var promises = [];
 			var res = [];
 			setOffline(false);
 			for (var date = start.clone(), i = 0; !date.isAfter(end) && i < 50; date = date.clone().add(1, 'day'), i++) {
 				(function (date) {
 					promises.push(
-						preloadDay(date)
+						preloadGroup(date)
 							.then(function (data) {
 								res.push({ date: date, data: data });
 							}));

@@ -25,11 +25,6 @@
 			groupBy: null,
 			/* Currently playing item */
 			current: null,
-			/* Element corresponding to currently playing item
-			 * This should really be a view property, but I put it here for some
-			 * stupid reason
-			 */
-			currentItemElement: null,
 			/* Initial date (now / @initial-date / date chosen in date-picker) */
 			initialDate: null
 		};
@@ -52,12 +47,8 @@
 		/* Helper function to detect if a timeline-item is currently airing */
 		scope.isCurrent = isCurrent;
 
-		/*
-		 * This object is only used by this controller and the template for now.
-		 * That should change as some stuff is blatantly in the wrong place at
-		 * the moment (see model.currentItemelement, view.groupsLoad*)
-		 * (TODO: Move scrollbox logic to separate directive)
-		 */
+		/* View stuff */
+		/* (TODO: Move scrollbox logic to separate directive) */
 		scope.view = {
 			reset: resetView,
 			/* Animator for scroll position */
@@ -76,6 +67,8 @@
 			mainContainer: null,
 			/* Element to scroll */
 			scrollContainer: null,
+			/* Element corresponding to currently playing item */
+			currentItemElement: null,
 			/* Date picker */
 			datePicker: {
 				reset: resetDatePicker,
@@ -102,19 +95,15 @@
 					timer: null,
 					start: null
 				}
-			},
-			/*
-			 * Should probably be on viewmodel (scope.model) rather than here,
-			 * these get how many groups are loading / have loaded
-			 */
-			groupsLoading: groupsLoading,
-			groupsLoaded: groupsLoaded
+			}
 		};
 
 		/* How far to scroll on wheel notch */
 		var screensPerWheelDelta = 0.2;
 		/* Used for "currently playing" checker */
 		var currentInterval;
+		/* Current item */
+		var current = null;
 
 		/*
 		 * Try to detect failed backend connection so we avoid spamming with
@@ -201,8 +190,6 @@
 		function resetModel(initialDate) {
 			/* Grouping */
 			scope.model.groupBy = scope.groupBy || defaultGroupBy;
-			/* Currently active item */
-			scope.model.current = null;
 			/* Notify children */
 			scope.$broadcast('modelReset');
 			/* Re-zero the view */
@@ -218,6 +205,7 @@
 		 */
 		function setInitialGroup() {
 			/*
+			 * Stylesheet load check:
 			 * Shouldn't be needed, but the shitty .NET system occasionally
 			 * fails to provide stylesheets, preventing the groups from stacking
 			 * horizontally, and thus resulting in the backend being spammed
@@ -235,9 +223,10 @@
 			scope.model.refDate = date;
 			/* Array of dates of groups to display */
 			scope.model.groups = [new ItemGroup(date)];
-			/* Notify child scopes of changed */
+			/* Reset current item */
+			setCurrent(null);
+			/* Notify child scopes of changes */
 			groupsChanged();
-			currentChanged();
 			/* Reset early fail count for error bailout */
 			earlyFailCount = 0;
 			disableLoading = false;
@@ -277,23 +266,34 @@
 		/* Periodically check which show is currently playing and update view */
 		function updateCurrent() {
 			if (!currentInterval) {
-				currentInterval = $interval(updateCurrent, 15000);
+				currentInterval = $interval(updateCurrent, 5000);
 				scope.$on('$destroy', function () {
 					$interval.cancel(currentInterval);
 					currentInterval = null;
 				});
 			}
-			var oldCurrent = scope.model.current;
-			scope.model.current = scope.api.getCurrent();
-			scope.model.currentItemElement = null;
-			if (!isCurrent(oldCurrent)) {
-				currentChanged();
+			setCurrent(scope.api.getCurrent());
+		}
+
+		function setCurrent(value) {
+			var old = current;
+			if (old === value) {
+				return;
+			}
+			current = value;
+			scope.view.currentItemElement = null;
+			if (isCurrent(old)) {
+				return;
+			}
+			scope.$broadcast('currentChanged');
+			if (!scope.view.userHasNavigated) {
+				scrollToCurrentItem(false);
 			}
 		}
 
 		/* Fuzzy comparison to see if item is currently showing */
 		function isCurrent(item) {
-			return sameItemFuzzy(item, scope.model.current);
+			return sameItemFuzzy(item, current);
 		}
 
 		/* Do not depend on reference equality */
@@ -304,8 +304,9 @@
 		}
 
 		function scrollToCurrentItem(immediate) {
-			var el = scope.model.currentItemElement;
-			if (scope.view.userHasNavigated || !el) {
+			var el = scope.view.currentItemElement;
+			if (!el) {
+				$timeout(function () { scrollToCurrentItem(immediate); }, 50);
 				return;
 			}
 			setOriginElement(el, true, true);
@@ -317,16 +318,15 @@
 			scope.$broadcast('groupsChanged');
 		}
 
-		function currentChanged() {
-			scope.$broadcast('currentChanged');
-			scrollToCurrentItem(false);
-		}
-
 		function setCurrentItemElement(event, element) {
-			var isInitial = !scope.model.currentItemElement;
+			var isInitial = !scope.view.currentItemElement;
+			scope.view.currentItemElement = element;
 			/* Let reflow happen first */
-			$immediate(function () { scrollToCurrentItem(isInitial); });
-			scope.model.currentItemElement = element;
+			$immediate(function () {
+				if (!scope.view.userHasNavigated) {
+					scrollToCurrentItem(isInitial);
+				}
+			});
 		}
 
 		/* Load more data */
