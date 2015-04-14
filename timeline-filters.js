@@ -2,20 +2,23 @@
 	'use strict';
 
 	angular.module('battlesnake.timeline')
-		.filter('timelineDate', timelineDateFilter)
-		.filter('timelineTime', timelineTimeFilter)
+		.filter('timelineGroupWhen', timelineGroupWhenFilter)
+		.filter('timelineItemWhen', timelineItemWhenFilter)
 		;
 
-	function timelineDateFilter(languageService, timelineLocale) {
+	function timelineGroupWhenFilter(languageService, timelineLocale) {
 		var lang = languageService(timelineLocale);
-		return function (when) {
-			return when.isSame(moment(), 'day') ? lang('today') : when.format('dddd DD.MM').replace(/^[a-z]/, function (c) { return c.toUpperCase(); });
+		return function (when, groupBy) {
+			return when.isSame(moment(), groupBy) ?
+				lang('today') :
+				when.format(lang('groupWhenFormat')).replace(/^[a-z]/, function (c) { return c.toUpperCase(); });
 		};
 	}
 
-	function timelineTimeFilter() {
+	function timelineItemWhenFilter(languageService, timelineLocale) {
+		var lang = languageService(timelineLocale);
 		return function (when) {
-			return when.format('HH:mm');
+			return when.format(lang('itemWhenFormat'));
 		};
 	}
 

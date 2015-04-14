@@ -14,15 +14,15 @@
 		<a href="javascript://" class="timeline-nav prev"></a>
 		<a href="javascript://" class="timeline-nav next"></a>
 		<!-- Scroll control -->
-		<div timeline-days class="timeline-days">
-			<!-- day in model.days -->
-			<div timeline-day class="timeline-day">
-				<div class="timeline-day-title">
-					<span class="timeline-day-title-dims">
-						{{ :: day.date | timelineDate }}
+		<div timeline-groups class="timeline-groups">
+			<!-- group in model.groups -->
+			<div timeline-group class="timeline-group">
+				<div class="timeline-group-title">
+					<span class="timeline-group-title-dims">
+						{{ :: group.date | timelineGroupWhen:model.groupBy }}
 					</span>
 				</div>
-				<!-- items = day.items -->
+				<!-- items <- getItems(group.date) -->
 				<div timeline-items items-per-row="2" current="model.current"
 					class="timeline-items">
 					<!-- item in items -->
@@ -57,7 +57,7 @@
 							<!-- Hover-over info -->
 							<div class="timeline-item-header">
 								<div class="timeline-item-time">
-									{{ :: item.start | timelineTime }}
+									{{ :: item.start | timelineItemWhen:model.groupBy }}
 								</div>
 								<div class="timeline-item-title">
 									{{ :: item.title }}

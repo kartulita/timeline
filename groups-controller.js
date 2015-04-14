@@ -2,15 +2,15 @@
 	'use strict';
 
 	angular.module('battlesnake.timeline')
-		.controller('timelineDaysController', timelineDaysController);
+		.controller('timelineGroupsController', timelineGroupsController);
 
-	function timelineDaysController($scope) {
+	function timelineGroupsController($scope) {
 		var scope = $scope;
 
 		var element;
 		var transclude;
 
-		var dayCache = {};
+		var groupCache = {};
 
 		this.init = initController;
 		return;
@@ -19,37 +19,38 @@
 			element = _element;
 			transclude = _transclude;
 			/* Event handlers */
-			scope.$on('daysChanged', updateDays);
+			scope.$on('groupsChanged', updateGroups);
 			scope.$on('modelReset', clearCache);
 		}
 
 		/* Create elements as needed */
-		function updateDays() {
-			_(scope.model.days).each(createDayElement);
+		function updateGroups() {
+			_(scope.model.groups).each(updateGroupElement);
 		}
 
-		/* Create element for a day if needed */
-		function createDayElement(day) {
-			var key = dayToKey(day);
+		/* Create element for a group if needed, does not delete/update */
+		function updateGroupElement(group) {
+			var date = group.date;
+			var key = dateToKey(date);
 			var cacheLine;
-			if (_(dayCache).has(key)) {
+			if (_(groupCache).has(key)) {
 				return;
 			} else {
 				cacheLine = {
-					serial: day.date.toDate().getTime(),
+					serial: date.toDate().getTime(),
 					generation: scope.model.resetCount,
 					element: null,
 					scope: null
 				};
-				dayCache[key] = cacheLine;
+				groupCache[key] = cacheLine;
 			}
 			var itemScope = scope.$new();
-			itemScope.day = day;
+			itemScope.group = group;
 			transclude(itemScope, function (clone, scope) {
 				scope.key = key;
 				cacheLine.element = clone;
 				cacheLine.scope = scope;
-				var position = findDayElementPosition(day);
+				var position = findGroupElementPosition(date);
 				if (position.prev) {
 					clone.insertAfter(position.prev.last());
 				} else if (position.next) {
@@ -60,15 +61,15 @@
 			});
 		}
 
-		/* Create cache key for a day (must be chronologically sortable) */
-		function dayToKey(day) {
-			return day.date.format('YYYY-MM-DD');
+		/* Create cache key for a date (must be chronologically sortable) */
+		function dateToKey(date) {
+			return date.format('YYYY-MM-DD HH:mm');
 		}
 
-		/* Find the elements that a day should be inserted between */
-		function findDayElementPosition(day) {
-			var ticks = day.date.toDate().getTime();
-			var res = _(dayCache)
+		/* Find the elements that a group should be inserted between */
+		function findGroupElementPosition(date) {
+			var ticks = date.toDate().getTime();
+			var res = _(groupCache)
 				.reduce(function (memo, cacheLine) {
 					var serial = cacheLine.serial;
 					var prev = memo.prev;
@@ -92,8 +93,8 @@
 
 		/* Empty the cache */
 		function clearCache() {
-			_(dayCache).each(function (line, key) {
-				delete dayCache[key];
+			_(groupCache).each(function (line, key) {
+				delete groupCache[key];
 				line.element.remove();
 				line.scope.$destroy();
 			});

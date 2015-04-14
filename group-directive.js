@@ -2,14 +2,14 @@
 	'use strict';
 
 	angular.module('battlesnake.timeline')
-		.directive('timelineDay', timelineDayDirective);
+		.directive('timelineGroup', timelineGroupDirective);
 
-	function timelineDayDirective() {
+	function timelineGroupDirective() {
 		return {
 			restrict: 'A',
 			priority: 10,
-			require: 'timelineDay',
-			controller: 'timelineDayController',
+			require: 'timelineGroup',
+			controller: 'timelineGroupController',
 			transclude: true,
 			link: link
 		};

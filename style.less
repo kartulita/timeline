@@ -4,9 +4,9 @@
  *   timeline-nav next
  *   timeline-goto
  *   timeline-stream-container
- *     timeline-days
- *       timeline-day[]
- *         timeline-day-title
+ *     timeline-groups
+ *       timeline-group[]
+ *         timeline-group-title
  *         timeline-items
  *           timeline-items-column[]
  *             timeline-item-container[]
@@ -35,17 +35,17 @@
 /* Darker version of base-color */
 @timeline-dark-color: darken(@timeline-base-color, 12);
 
-/* Day title size */
-@timeline-day-title-weight: inherit;
-@timeline-day-title-height-l: 35px;
-@timeline-day-title-height-m: 33px;
-@timeline-day-title-height-s: 29px;
-@timeline-day-title-font-size-l: 27px;
-@timeline-day-title-font-size-m: 25px;
-@timeline-day-title-font-size-s: 21px;
-@timeline-day-title-margin-y-l: 6px;
-@timeline-day-title-margin-y-m: 6px;
-@timeline-day-title-margin-y-s: 4px;
+/* Group title size */
+@timeline-group-title-weight: inherit;
+@timeline-group-title-height-l: 35px;
+@timeline-group-title-height-m: 33px;
+@timeline-group-title-height-s: 29px;
+@timeline-group-title-font-size-l: 27px;
+@timeline-group-title-font-size-m: 25px;
+@timeline-group-title-font-size-s: 21px;
+@timeline-group-title-margin-y-l: 6px;
+@timeline-group-title-margin-y-m: 6px;
+@timeline-group-title-margin-y-s: 4px;
 
 /* Size of tile */
 @timeline-item-size-l: 144px;
@@ -71,8 +71,10 @@
 @timeline-padding-bottom-m: 32px;
 @timeline-padding-bottom-s: 24px;
 
-/* Horizontal spacing between days */
-@timeline-day-spacing: 10px;
+/* Horizontal spacing between groups */
+@timeline-group-spacing-l: 10px;
+@timeline-group-spacing-m: 10px;
+@timeline-group-spacing-s: 10px;
 
 /* Nav button padding and font size */
 @timeline-nav-button-padding-x-l: 24px;
@@ -126,18 +128,19 @@
 	@nav-button-padding-x, @nav-button-padding-y,
 	@nav-button-arrow-size, @nav-button-full-height-arrow-size,
 	@nav-button-full-height,
-	@day-title-height, @day-title-font-size, @day-title-margin-y,
+	@group-title-height, @group-title-font-size,
+	@group-title-margin-y, @group-spacing,
 	@goto-button-margin, @goto-button-padding)
 {
 	/* Internal calculations */
 	@column-height: (@row-count * (@item-size + @item-spacing) - @item-spacing);
 	@big-item-size: (@column-height);
-	@day-title-full-height: (@day-title-height + (2 * @day-title-margin-y));
-	@height: (@column-height + @padding-top + @padding-bottom + @day-title-full-height);
-	@goto-button-size: (@day-title-height + @padding-top + 2 * @day-title-margin-y - 2 * @goto-button-margin);
+	@group-title-full-height: (@group-title-height + (2 * @group-title-margin-y));
+	@height: (@column-height + @padding-top + @padding-bottom + @group-title-full-height);
+	@goto-button-size: (@group-title-height + @padding-top + 2 * @group-title-margin-y - 2 * @goto-button-margin);
 	@goto-button-icon-size: (@goto-button-size - 2 * @goto-button-padding);
 	/* Variables to use within .responsive ruleset fragments */
-	@timeline-stream-height: (@big-item-size + @day-title-full-height);
+	@timeline-stream-height: (@big-item-size + @group-title-full-height);
 	@timeline-row-count: (@row-count);
 	@timeline-item-size: (@item-size);
 	@timeline-item-spacing: (@item-spacing);
@@ -152,9 +155,10 @@
 	@timeline-nav-button-arrow-size: (@nav-button-arrow-size);
 	@timeline-nav-button-full-height-arrow-size: (@nav-button-full-height-arrow-size);
 	@timeline-nav-button-full-height: (@nav-button-full-height);
-	@timeline-day-title-height: (@day-title-height);
-	@timeline-day-title-font-size: (@day-title-font-size);
-	@timeline-day-title-margin-y: (@day-title-margin-y);
+	@timeline-group-title-height: (@group-title-height);
+	@timeline-group-title-font-size: (@group-title-font-size);
+	@timeline-group-title-margin-y: (@group-title-margin-y);
+	@timeline-group-spacing: (@group-spacing);
 	@timeline-goto-button-margin: (@goto-button-margin);
 	@timeline-goto-button-padding: (@goto-button-padding);
 	@timeline-goto-button-size: (@goto-button-size);
@@ -170,8 +174,8 @@
 		@timeline-nav-button-padding-x-l, @timeline-nav-button-padding-y-l,
 		@timeline-nav-button-arrow-size-l, @timeline-nav-button-full-height-arrow-size-l,
 		@timeline-nav-button-full-height-l,
-		@timeline-day-title-height-l, @timeline-day-title-font-size-l,
-		@timeline-day-title-margin-y-l,
+		@timeline-group-title-height-l, @timeline-group-title-font-size-l,
+		@timeline-group-title-margin-y-l, @timeline-group-spacing-l,
 		@timeline-goto-button-margin-l, @timeline-goto-button-padding-l
 	);
 	@rules();
@@ -185,8 +189,8 @@
 		@timeline-nav-button-padding-x-m, @timeline-nav-button-padding-y-m,
 		@timeline-nav-button-arrow-size-m, @timeline-nav-button-full-height-arrow-size-m,
 		@timeline-nav-button-full-height-m,
-		@timeline-day-title-height-m, @timeline-day-title-font-size-m,
-		@timeline-day-title-margin-y-m,
+		@timeline-group-title-height-m, @timeline-group-title-font-size-m,
+		@timeline-group-title-margin-y-m, @timeline-group-spacing-m,
 		@timeline-goto-button-margin-m, @timeline-goto-button-padding-m
 	);
 	@rules();
@@ -200,8 +204,8 @@
 		@timeline-nav-button-padding-x-s, @timeline-nav-button-padding-y-s,
 		@timeline-nav-button-arrow-size-s, @timeline-nav-button-full-height-arrow-size-s,
 		@timeline-nav-button-full-height-s,
-		@timeline-day-title-height-s, @timeline-day-title-font-size-s,
-		@timeline-day-title-margin-y-s,
+		@timeline-group-title-height-s, @timeline-group-title-font-size-s,
+		@timeline-group-title-margin-y-s, @timeline-group-spacing-s,
 		@timeline-goto-button-margin-s, @timeline-goto-button-padding-s
 	);
 	@rules();
@@ -286,9 +290,9 @@
 	}
 }
 
-/* Style added to day-title */
-.day-title-style() {
-	font-weight: (@timeline-day-title-weight);
+/* Style added to group-title */
+.group-title-style() {
+	font-weight: (@timeline-group-title-weight);
 }
 
 /* item-header-* mixins called from within .responsive */
@@ -419,30 +423,34 @@ a {
 	}
 }
 
-.timeline-days {
+.timeline-groups {
 	display: inline-block;
 	position: relative;
 	white-space: nowrap;
 	overflow: hidden;
 	z-index: 1;
+	/* Controller checks for non-zero width to ensure CSS is loaded */
+	min-width: 1px;
 }
 
-.timeline-day {
+.timeline-group {
 	display: inline-block;
-	margin: 0 (@timeline-day-spacing) 0;
+	.responsive({
+		margin: 0 (@timeline-group-spacing) 0;
+	});
 }
 
-.timeline-day-title {
+.timeline-group-title {
 	display: block;
 	position: relative;
 	white-space: nowrap;
-	.day-title-style();
+	.group-title-style();
 	.responsive({
-		line-height: (@timeline-day-title-height);
-		font-size: (@timeline-day-title-font-size);
-		margin: (@timeline-day-title-margin-y) 0;
+		line-height: (@timeline-group-title-height);
+		font-size: (@timeline-group-title-font-size);
+		margin: (@timeline-group-title-margin-y) 0;
 	});
-	.timeline-day-title-dims {
+	.timeline-group-title-dims {
 		display: inline-block;
 	}
 }

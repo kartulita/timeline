@@ -12,14 +12,21 @@
 		en: {
 			playLive: 'Now playing',
 			today: 'Today',
+			groupWhenFormat: 'dddd DD.MM',
+			itemWhenFormat: 'HH:mm',
 		},
 		et: {
-			playLive: 'Vaata otse', /* timeline-adapter in battlesnake.err modifies/decorates for radio channels */
+			/* battlesnake.err:timeline-adapter modifies/decorates playLive for radio channels */
+			playLive: 'Vaata otse',
 			today: 'Täna',
+			groupWhenFormat: 'dddd DD.MM',
+			itemWhenFormat: 'HH:mm',
 		},
 		ru: {
 			playLive: 'Прямой эфир',
 			today: 'Сегодня',
+			groupWhenFormat: 'dddd DD.MM',
+			itemWhenFormat: 'HH:mm',
 		}
 	};
 

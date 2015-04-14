@@ -13,13 +13,25 @@
 	function timelineController($scope, $timeout, $interval, $window, $swipe, languageService, timelineLocale, timelineService, timelineAnimatorFactory) {
 		var scope = $scope;
 
+		var defaultGroupBy = 'day';
+
 		/* l10n */
 		scope.strings = languageService(timelineLocale);
 
-		/* This object is used by child directives */
+		/* Public viewmodel - this object is also used by child directives */
 		scope.model = {
+			reset: resetModel,
+			/* Grouping */
+			groupBy: null,
+			/* Currently playing item */
 			current: null,
-			currentItemElement: null
+			/* Element corresponding to currently playing item
+			 * This should really be a view property, but I put it here for some
+			 * stupid reason
+			 */
+			currentItemElement: null,
+			/* Initial date (now / @initial-date / date chosen in date-picker) */
+			initialDate: null
 		};
 
 		/* High-level methods for manipulating the view state */
@@ -40,11 +52,18 @@
 		/* Helper function to detect if a timeline-item is currently airing */
 		scope.isCurrent = isCurrent;
 
-		/* View variables which serve no purpose outside this directive */
-		/* (TODO: Move scrollbox logic to separate directive) */
+		/*
+		 * This object is only used by this controller and the template for now.
+		 * That should change as some stuff is blatantly in the wrong place at
+		 * the moment (see model.currentItemelement, view.groupsLoad*)
+		 * (TODO: Move scrollbox logic to separate directive)
+		 */
 		scope.view = {
+			reset: resetView,
 			/* Animator for scroll position */
 			position: timelineAnimatorFactory.create(scrollChanged, scrollEvent),
+			/* User has nagivated (either scrolled or used date-picker) */
+			userHasNavigated: false,
 			/* X-coordinate of first item (the reference position for scrolling) */
 			getOrigin: getOrigin,
 			/* When origin is changed, this is updated to provide a delta */
@@ -84,17 +103,23 @@
 					start: null
 				}
 			},
-			daysLoading: daysLoading,
-			daysLoaded: daysLoaded
+			/*
+			 * Should probably be on viewmodel (scope.model) rather than here,
+			 * these get how many groups are loading / have loaded
+			 */
+			groupsLoading: groupsLoading,
+			groupsLoaded: groupsLoaded
 		};
 
 		/* How far to scroll on wheel notch */
 		var screensPerWheelDelta = 0.2;
 		/* Used for "currently playing" checker */
 		var currentInterval;
-		/* Has the user navigated the timeline at all */
-		var userHasNavigated = false;
 
+		/*
+		 * Try to detect failed backend connection so we avoid spamming with
+		 * doomed requests
+		 */
 		var earlyFailCount = 0;
 		var disableLoading = false;
 
@@ -112,18 +137,17 @@
 		function initController(element) {
 			scope.initController = null;
 			scope.view.mainContainer = element;
-			scope.view.scrollContainer = scope.view.mainContainer.find('.timeline-days');
+			scope.view.scrollContainer = scope.view.mainContainer.find('.timeline-groups');
 			scope.$watch('adapter', adapterChanged);
+			scope.$watch('groupBy', scope.model.reset);
 			/* Touch events */
 			$swipe.bind(scope.view.mainContainer, scope.view.touch, ['touch', 'mouse']);
 			$swipe.bind(element.find('.timeline-nav'), scope.view.navTouch, ['touch', 'mouse']);
 			/* Scope observers */
-			scope.$on('adapterChanged', function () { resetModel(); });
-			scope.$on('dayLoaded', dayLoaded);
-			scope.$on('dayLoadFailed', dayLoadFailed);
+			scope.$on('groupLoaded', groupLoaded);
+			scope.$on('groupLoadFailed', groupLoadFailed);
 			scope.$on('setCurrentItemElement', setCurrentItemElement);
 			$(window).bind('resize', function () { scope.$apply(windowResized); });
-			userHasNavigated = false;
 		}
 
 		function windowResized() {
@@ -138,14 +162,17 @@
 			} else {
 				scope.api = null;
 			}
+			scope.model.reset();
 			scope.$broadcast('adapterChanged');
 		}
 
-		/* Emergency bailout, prevents us hammering backend with requests if days are not loading */
-		function dayLoadFailed() {
-			if (scope.model.days.length < 5 && ++earlyFailCount >= 5) {
+		/*
+		 * Emergency bailout, prevents us spamming requests if backend is broken
+		 */
+		function groupLoadFailed() {
+			if (scope.model.groups.length < 5 && ++earlyFailCount >= 5) {
 				disableLoading = true;
-				scope.model.days.length = 0;
+				scope.model.groups.length = 0;
 			}
 		}
 
@@ -161,29 +188,55 @@
 
 		/* Model */
 
-		function makeDay(date) {
-			return {
-				date: date,
-				loading: false,
-				loaded: false,
-				failed: false
-			};
+		function ItemGroup(date) {
+			this.date = date;
+			this.loading = false;
+			this.loaded = false;
+			this.failed = false;
+			if (Object.seal) {
+				Object.seal(this);
+			}
 		}
 
-		function resetModel(day) {
-			day = (day ? day : moment()).local().startOf('day');
-			/* Store reference date */
-			scope.model.refDate = day;
-			/* Array of dates of days to display */
-			scope.model.days = [makeDay(day)];
+		function resetModel(initialDate) {
+			/* Grouping */
+			scope.model.groupBy = scope.groupBy || defaultGroupBy;
 			/* Currently active item */
 			scope.model.current = null;
 			/* Notify children */
 			scope.$broadcast('modelReset');
 			/* Re-zero the view */
-			resetView();
+			scope.view.reset();
+			/* Set initial date */
+			scope.model.initialDate = initialDate || null;
+			setInitialGroup();
+		}
+
+		/*
+		 * Resets view to just show the initial group, which will trigger the
+		 * loading of adjacent groups as needed to fill the view
+		 */
+		function setInitialGroup() {
+			/*
+			 * Shouldn't be needed, but the shitty .NET system occasionally
+			 * fails to provide stylesheets, preventing the groups from stacking
+			 * horizontally, and thus resulting in the backend being spammed
+			 * with requests for more group data
+			 */
+			if (scope.view.scrollContainer.outerWidth() === 0) {
+				$timeout(setInitialGroup, 50);
+				return;
+			}
+			/* Get initial group to show */
+			var date = moment(scope.model.initialDate || scope.initialDate || moment())
+				.clone().local().startOf(scope.model.groupBy);
+			scope.model.initialDate = date;
+			/* Store reference date */
+			scope.model.refDate = date;
+			/* Array of dates of groups to display */
+			scope.model.groups = [new ItemGroup(date)];
 			/* Notify child scopes of changed */
-			daysChanged();
+			groupsChanged();
 			currentChanged();
 			/* Reset early fail count for error bailout */
 			earlyFailCount = 0;
@@ -194,26 +247,24 @@
 			if (!value) {
 				return;
 			}
-			/* if (scope.model.refDate && !scope.model.refDate.isSame(value, 'day')) { */
-			resetModel(moment(value));
-			/* } */
-			userHasNavigated = true;
+			scope.model.reset(moment(value));
+			scope.view.userHasNavigated = true;
 		}
 
-		/* Number of days that are loading */
-		function daysLoading() {
-			var days = _(scope.model.days).where({ loading: true });
-			return days ? days.length : 0;
+		/* Number of groups that are loading */
+		function groupsLoading() {
+			var groups = _(scope.model.groups).where({ loading: true });
+			return groups ? groups.length : 0;
 		}
 
-		/* Number of days that have loaded */
-		function daysLoaded() {
-			var days = _(scope.model.days).where({ loaded: true });
-			return days ? days.length : 0;
+		/* Number of groups that have loaded */
+		function groupsLoaded() {
+			var groups = _(scope.model.groups).where({ loaded: true });
+			return groups ? groups.length : 0;
 		}
 
-		function dayLoaded(event, element) {
-			/* Set day as reference if none has been acquired yet */
+		function groupLoaded(event, element) {
+			/* Set group as reference if none has been acquired yet */
 			if (!scope.view.reference) {
 				setOriginElement(element, false, false);
 			}
@@ -254,7 +305,7 @@
 
 		function scrollToCurrentItem(immediate) {
 			var el = scope.model.currentItemElement;
-			if (userHasNavigated || !el) {
+			if (scope.view.userHasNavigated || !el) {
 				return;
 			}
 			setOriginElement(el, true, true);
@@ -262,8 +313,8 @@
 
 		/* Observers */
 
-		function daysChanged() {
-			scope.$broadcast('daysChanged');
+		function groupsChanged() {
+			scope.$broadcast('groupsChanged');
 		}
 
 		function currentChanged() {
@@ -280,22 +331,22 @@
 
 		/* Load more data */
 
-		function loadPastDay() {
-			var days = scope.model.days;
-			if (disableLoading || days.length && days[0].failed) {
+		function loadPastGroup() {
+			var groups = scope.model.groups;
+			if (disableLoading || groups.length && groups[0].failed) {
 				return;
 			}
-			days.unshift(makeDay(days[0].date.clone().subtract(1, 'day')));
-			daysChanged();
+			groups.unshift(new ItemGroup(groups[0].date.clone().subtract(1, scope.model.groupBy)));
+			groupsChanged();
 		}
 
-		function loadFutureDay() {
-			var days = scope.model.days;
-			if (disableLoading || days.length && days[days.length - 1].failed) {
+		function loadFutureGroup() {
+			var groups = scope.model.groups;
+			if (disableLoading || groups.length && groups[groups.length - 1].failed) {
 				return;
 			}
-			days.push(makeDay(days[days.length - 1].date.clone().add(1, 'day')));
-			daysChanged();
+			groups.push(new ItemGroup(groups[groups.length - 1].date.clone().add(1, scope.model.groupBy)));
+			groupsChanged();
 		}
 
 		/* Event handler to open an item when tapped/clicked */
@@ -324,7 +375,7 @@
 			}
 		}
 
-		/* Called by the animator: updates view and triggers loading of more days if needed */
+		/* Called by the animator: updates view and triggers loading of more groups if needed */
 
 		function scrollChanged(current, target) {
 			if (!arguments.length) {
@@ -376,13 +427,13 @@
 				scope.view.position.value = position;
 			}
 			var offset = getScrollOffset();
-			/* Ensure at least one day title is wholly visible in the view */
-			keepAtLeastOneDayTitleInView();
+			/* Ensure at least one group title is wholly visible in the view */
+			keepAtLeastOneGroupTitleInView();
 			/* Set position in view */
 			scope.view.scrollContainer.css({
 				transform: 'translateX(%px)'.replace('%', -offset)
 			});
-			/* Load more days if needed  */
+			/* Load more groups if needed  */
 			ensureViewIsFilled();
 		}
 
@@ -396,13 +447,13 @@
 			var offset = scope.view.position.value.target + scope.view.originOffset + scope.view.getOrigin();
 			var loadNextThreshold = pageWidth + 300;
 			/* Some limits to prevent us from flooding the backend */
-			if (scope.view.reference && daysLoading() <= 2 && daysLoaded() > 0) {
+			if (scope.view.reference && groupsLoading() <= 2 && groupsLoaded() > 0) {
 				/* Force $apply for these */
 				if (offset < loadNextThreshold) {
-					trackDeferred(loadPastDay);
+					trackDeferred(loadPastGroup);
 				}
 				if (offset > (viewWidth - loadNextThreshold)) {
-					trackDeferred(loadFutureDay);
+					trackDeferred(loadFutureGroup);
 				}
 			}
 			return;
@@ -423,25 +474,20 @@
 			}
 		}
 
-		/*
-		 * Used to be in day-controller, cound to scrollChanged broadcast, but
-		 * this required $apply to work, wrecking animation performance.
-		 */
-		function keepAtLeastOneDayTitleInView() {
+		function keepAtLeastOneGroupTitleInView() {
 			var offset = getScrollOffset();
 			var width = getPageWidth();
-			var dayElements = scope.view.mainContainer.find('.timeline-day');
-			dayElements.each(function () {
+			var groupElements = scope.view.mainContainer.find('.timeline-group');
+			groupElements.each(function () {
 				updateTitlePosition(angular.element(this), offset, width);
 			});
 			return;
 
-			/* Ripped out of day-controller */
 			function updateTitlePosition(element, offset, width) {
 				var e_l = element.position().left - offset;
 				var e_w = element.innerWidth();
 				var e_r = e_l + e_w;
-				var title = element.find('.timeline-day-title');
+				var title = element.find('.timeline-group-title');
 				var t_w = title.find(':first-child').outerWidth(true);
 					
 				/*     OFF-LEFT | IN VIEW | OFF-RIGHT */
@@ -474,9 +520,10 @@
 		/* High-level scroll methods */
 
 		function resetView() {
-			scope.view.referenceCentered = 0;
+			scope.view.referenceCentered = false;
 			scope.view.reference = null;
 			scope.view.originOffset = 0;
+			scope.view.userHasNavigated = false;
 			scope.view.position.reset();
 			scope.view.datePicker.reset();
 		}
@@ -621,7 +668,7 @@
 				x: r.x
 			};
 			scope.methods.scrollBy(dx, true);
-			userHasNavigated = true;
+			scope.view.userHasNavigated = true;
 		}
 
 		function touchEnd(r) {
@@ -659,7 +706,7 @@
 			var pageWidth = getPageWidth();
 			var scrollQuantum = pageWidth * 2 / 3;
 			scrollBy(blocks * scrollQuantum, false, rel);
-			userHasNavigated = true;
+			scope.view.userHasNavigated = true;
 		}
 
 		/* Scroll by pixels (positive direction = right) */

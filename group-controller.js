@@ -2,9 +2,9 @@
 	'use strict';
 
 	angular.module('battlesnake.timeline')
-		.controller('timelineDayController', timelineDayController);
+		.controller('timelineGroupController', timelineGroupController);
 
-	function timelineDayController($scope, $q) {
+	function timelineGroupController($scope, $q) {
 		var scope = $scope;
 		var element;
 		var transclude;
@@ -16,50 +16,50 @@
 		function initController(_element, _transclude) {
 			element = _element;
 			transclude = _transclude;
-			reloadDay();
+			loadGroup();
 		}
 
-		function reloadDay() {
+		function loadGroup() {
 			if (!scope.api) {
 				return;
 			}
-			var day = scope.day;
-			var date = day.date;
+			var group = scope.group;
+			var date = group.date;
 			/*
-			 * We get adjacent days and filter to ensure that day groups
+			 * We get adjacent groups and filter to ensure that group groups
 			 * correspond to the local time-zone.  Since the front-end
-			 * service caches day data, this won't result in redundant
+			 * service caches group data, this won't result in redundant
 			 * requests to the back-end, and also serves to pre-load
-			 * adjacent days if not already loaded.
+			 * adjacent groups if not already loaded.
 			 */
-			var daysToGet = [
-				date.clone().subtract(1, 'day'),
+			var groupsToGet = [
+				date.clone().subtract(1, scope.model.groupBy),
 				date,
-				date.clone().add(1, 'day')
+				date.clone().add(1, scope.model.groupBy)
 			];
-			/* Map days to promises and process result */
+			/* Map groups to promises and process result */
 			$q.when(null)
 				.then(function () {
-					day.loading = true;
-					scope.$emit('dayLoading');
+					group.loading = true;
+					scope.$emit('groupLoading');
 				})
 				.then(function () {
-					return $q.all(daysToGet.map(scope.api.getDay));
+					return $q.all(groupsToGet.map(scope.api.getGroup));
 				})
 				.then(function (data) { return [].concat.apply([], data); })
 				.then(filterData)
 				.then(sortData)
 				.then(createChildren)
-				.then(function () { day.loaded = true; })
+				.then(function () { group.loaded = true; })
 				.catch(function () {
-					day.failed = true;
-					scope.$emit('dayLoadFailed');
+					group.failed = true;
+					scope.$emit('groupLoadFailed');
 					scope.$destroy();
 					element.remove();
 				})
 				.finally(function () {
-					day.loading = false;
-					scope.$emit('dayLoaded', element);
+					group.loading = false;
+					scope.$emit('groupLoaded', element);
 				})
 				;
 
@@ -67,10 +67,10 @@
 
 			function filterData(data) {
 				return _(data)
-					.filter(isToday);
+					.filter(isNow);
 
-				function isToday(item) {
-					return day.date.isSame(item.start, 'day');
+				function isNow(item) {
+					return date.isSame(item.start, scope.model.groupBy);
 				}
 			}
 
@@ -86,7 +86,7 @@
 			function createChildren(data) {
 				/*
 				 * If no data available, assume no data is available for
-				 * this day and notify the controller
+				 * this group and notify the controller
 				 */
 				if (!data.length) {
 					return $q.reject('No data');

@@ -27,13 +27,13 @@
 			});
 
 			return {
-				getDay: getDay,
+				getGroup: getGroup,
 				getCurrent: getCurrent
 			};
 
-			function getDay(day) {
-				day = moment(day);
-				var key = getKey(day);
+			function getGroup(date) {
+				date = moment(date);
+				var key = getKey(date);
 				/* Check cache */
 				if ((adapter.canCache && adapter.canCache(key)) && _(cache).has(key)) {
 					return cache[key];
@@ -43,7 +43,7 @@
 					return loading[key];
 				}
 				/* Get from backend */
-				return loading[key] = adapter.getDay(day)
+				return loading[key] = adapter.getGroup(date)
 					.then(dataLoaded)
 					.then(function (data) { return cacheData(key, data); })
 					.catch(function () { return cacheData(key, []); });
@@ -55,7 +55,7 @@
 			}
 			
 			function getKey(date) {
-				return moment(date).format('YYYY-MM-DD');
+				return moment(date).format('YYYY-MM-DD HH:mm:ss');
 			}
 
 			function cacheData(key, data) {

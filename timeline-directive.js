@@ -12,6 +12,9 @@
 			scope: {
 				adapter: '=timeline',
 				onOpenItem: '&timelineOpenItem',
+				initialDate: '@timelineInitialDate',
+				groupBy: '@timelineGroupBy'
+
 			},
 			templateUrl: 'timeline-template.html',
 			link: link
