@@ -35,6 +35,15 @@
 /* Darker version of base-color */
 @timeline-dark-color: darken(@timeline-base-color, 12);
 
+/* Recommend to use bootstrap full-width instead of this parameter if possible */
+@timeline-full-width: false;
+
+/* Colours for navigation buttons */
+@timeline-nav-button-background: @timeline-base-color;
+@timeline-nav-button-background-hover: @timeline-dark-color;
+@timeline-nav-button-color: inherit;
+@timeline-nav-button-color-hover: inherit;
+
 /* Group title size */
 @timeline-group-title-weight: inherit;
 @timeline-group-title-height-l: 35px;
@@ -246,9 +255,7 @@
 	box-sizing: border-box;
 }
 
-/* Mixins to override for custom styling */
-
-/* Style added to timeline elemenet */
+/* Style added to timeline element */
 .timeline-style() {
 	font-weight: normal;
 	line-height: 1;
@@ -259,16 +266,26 @@
 	box-sizing: padding-box;
 }
 
+.timeline-set-width() when (@timeline-full-width = true) {
+	overflow: hidden;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.timeline-set-width() when (@timeline-full-width = false) {
+}
+
 /* Style added to navigation buttons */
 .nav-button-style {
-	color: white;
+	color: (@timeline-nav-button-color);
 	speak: none;
 	transition: background 800ms ease;
 	font-family: FontAwesome;
 	font-weight: bold;
-	background: fade(@timeline-base-color, 77%);
+	background: (@timeline-nav-button-background);
 	&:hover {
-		background: fade(@timeline-dark-color, 97%);
+		color: (@timeline-nav-button-color-hover);
+		background: (@timeline-nav-button-background-hover);
 		transition: none;
 	}
 
@@ -349,6 +366,7 @@ background-color: (@timeline-background-color);
 background: (@timeline-background);
 border: 0;
 .timeline-style();
+.timeline-set-width();
 .responsive({
 	padding: (@timeline-padding-top) 0 (@timeline-padding-bottom);
 	height: (@timeline-height);

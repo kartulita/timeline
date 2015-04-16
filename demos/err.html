@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Timeline demo</title>
+<base href="../">
+<meta charset="utf8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="http://etv.err.ee/Content/less/theme/etv/bootstrap.less" rel="stylesheet">
+<!-- Dependencies -->
+<link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.css">
+<link rel="stylesheet" href="bower_components/icomoon/dist/css/style.css">
+<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="bower_components/jquery-ui/themes/smoothness/jquery-ui.css">
+<script src="bower_components/jquery/dist/jquery.min.js"></script>
+<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
+<script src="bower_components/jquery-ui/ui/i18n/datepicker-en-GB.js"></script>
+<script src="bower_components/jquery-ui/ui/i18n/datepicker-et.js"></script>
+<script src="bower_components/jquery-ui/ui/i18n/datepicker-ru.js"></script>
+<script src="bower_components/moment/min/moment-with-locales.min.js"></script>
+<script src="bower_components/underscore/underscore-min.js"></script>
+<script src="bower_components/angular/angular.min.js"></script>
+<script src="bower_components/angular-touch/angular-touch.min.js"></script>
+<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+<script src="bower_components/less/dist/less.min.js"></script>
+<!-- AJAX proxy for demos only -->
+<script src="../ajax-proxy/client.js"></script>
+<!-- Language -->
+<script src="../language/module.js"></script>
+<script src="../language/language-service.js"></script>
+<!-- Apis -->
+<script src="../err/module.js"></script>
+<script src="../err/locale.js"></script>
+<script src="../err/apis.js"></script>
+<script src="../err/timeline-adapter.js"></script>
+<!-- Date-picker -->
+<script src="../date-picker/module.js"></script>
+<script src="../date-picker/datepicker-locale.js"></script>
+<script src="../date-picker/datepicker-directive.js"></script>
+<!-- Timeline -->
+<script src="module.js"></script>
+<script src="timeline-template.html" type="text/ng-template"></script>
+<script src="timeline-locale.js"></script>
+<script src="timeline-service.js"></script>
+<script src="timeline-filters.js"></script>
+<script src="timeline-controller.js"></script>
+<script src="timeline-animator.js"></script>
+<script src="groups-controller.js"></script>
+<script src="group-controller.js"></script>
+<script src="items-controller.js"></script>
+<script src="timeline-directive.js"></script>
+<script src="groups-directive.js"></script>
+<script src="group-directive.js"></script>
+<script src="items-directive.js"></script>
+<!-- Demo -->
+<script>
+(function (angular) {
+	'use strict';
+
+	angular.module('demo', ['battlesnake.timeline', 'battlesnake.err', 'battlesnake.ajax-proxy'])
+		.controller('demoController', demoController);
+
+	function demoController($scope, $timeout, $http, timelineAdapterFactory, scheduleApi) {
+		$scope.adapters = _(scheduleApi).map(function (api, name) {
+			return {
+				name: name,
+				timeline: timelineAdapterFactory(api)
+			};
+		});
+		$scope.model = {
+			title: 'Timeline demo',
+			adapter: null,
+			fullWidth: true,
+			widths: { 'Full width': true, 'Main flow width': false },
+			theme: '',
+			themes: ['common', 'etv1', 'etv2', 'raadio2', 'raadio4', 'viker', 'klassika', 'r-tallinn'],
+			css: ''
+		};
+		$scope.model.theme = $scope.model.themes[0];
+		$scope.model.adapter = $scope.adapters[0];
+		$scope.$watch('model.theme', refreshLess);
+		return;
+
+		function refreshLess() {
+			$scope.model.css += '\n\n*{cursor: wait !important;}\n';
+			var data = [
+				'@import "../style.less";',
+				'@import "../../err/themes/' + $scope.model.theme + '.less";'
+			].join('\n');
+			var opts = {
+				useFileCache: true,
+				env: 'production'
+			};
+			return $timeout(function () {}, 100, false)
+				.then(function () {
+					return less.render(data, opts);
+				})
+				.then(function (output) {
+					$scope.model.css = output.css;
+				});
+		}
+	}
+
+})(window.angular);
+</script>
+<style>
+body {
+	font-family: sans-serif;
+}
+h1 {
+	margin-bottom: 40px;
+}
+.form {
+	margin: 20px auto 60px;
+	max-width: 600px;
+}
+.form>label {
+	display: block;
+	margin: 8px 0 16px;
+}
+.color-pad {
+	width: 64px;
+	height: 64px;
+	margin: 4px;
+	display: inline-block;
+	vertical-align: top;
+	transition: transform 200ms ease;
+	-webkit-transition: transform 200ms ease;
+}
+.color-pad.selected {
+	transform: rotate(95deg);
+	-webkit-transform: rotate(95deg);
+}
+label {
+	display: block;
+	margin: 20px 0;
+}
+label select {
+	display: block;
+	margin-left: 40px;
+}
+</style>
+</head>
+<body ng-app="demo" ng-controller="demoController">
+	<style ng-bind="model.css">
+	</style>
+	<div class="container">
+		<h1 ng-bind="model.title"></h1>
+		<label>Channel<select ng-model="model.adapter" ng-options="adapter as adapter.name for adapter in adapters"></select></label>
+		<label>Theme<select ng-model="model.theme" ng-options="theme for theme in model.themes"></select></label>
+		<label>Width<select ng-model="model.fullWidth" ng-options="select as label for (label, select) in model.widths"></select></label>
+	</div>
+	<!-- Here it is! -->
+	<div class="container" ng-class="{ 'full-width': model.fullWidth }">
+		<div timeline="model.adapter.timeline" class="kartulita row"></div>
+	</div>
+</body>
+</html>
