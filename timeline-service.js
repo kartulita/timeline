@@ -43,10 +43,12 @@
 					return loading[key];
 				}
 				/* Get from backend */
-				return loading[key] = adapter.getGroup(date)
+				var result = adapter.getGroup(date)
 					.then(dataLoaded)
 					.then(function (data) { return cacheData(key, data); })
 					.catch(function () { return cacheData(key, []); });
+				loading[key] = result;
+				return result;
 
 				function dataLoaded(data) {
 					delete loading[key];

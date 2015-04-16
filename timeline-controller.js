@@ -328,7 +328,7 @@
 		function sameItemFuzzy(a, b) {
 			return a === b || (a && b &&
 				a.start.unix() === b.start.unix() &&
-				a.id == b.id);
+				a.id === b.id);
 		}
 
 		function scrollToCurrentItem(immediate) {
