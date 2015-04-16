@@ -121,6 +121,34 @@
 			$timeout(fn, 0);
 		}
 
+		function $delay(fn, delay) {
+			var timer = null;
+			return function() {
+				if (timer) {
+					return;
+				} else {
+					timer = $timeout(function () {
+						timer = null;
+						fn();
+					}, delay);
+				}
+			};
+		}
+
+		function $debounce(fn, delay) {
+			var timer = null;
+			return function() {
+				if (timer) {
+					return;
+				} else {
+					fn();
+					timer = $timeout(function () {
+						timer = null;
+					}, delay);
+				}
+			};
+		}
+
 		/* Initialiser */
 
 		function initController(element) {
@@ -136,11 +164,11 @@
 			scope.$on('groupLoaded', groupLoaded);
 			scope.$on('groupLoadFailed', groupLoadFailed);
 			scope.$on('setCurrentItemElement', setCurrentItemElement);
-			$(window).bind('resize', function () { scope.$apply(windowResized); });
+			$(window).bind('resize', $debounce(windowResized, /WebKit/i.test(window.navigator.userAgent) ? 1000/60 : 1000/10));
 		}
 
 		function windowResized() {
-			/* Update scroll (in case reference element is centered */
+			/* Update scroll (in case reference element is centered) */
 			updateScrollOffset();
 		}
 
