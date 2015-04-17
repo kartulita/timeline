@@ -14,8 +14,8 @@
 				onOpenItem: '&timelineOpenItem',
 				initialDate: '@timelineInitialDate',
 				groupBy: '@timelineGroupBy',
-				noCalendar: '@timelineNoCalendar'
-
+				noCalendar: '@timelineNoCalendar',
+				allowEmptyGroups: '@timelineAllowEmptyGroups'
 			},
 			templateUrl: 'timeline-template.html',
 			link: link

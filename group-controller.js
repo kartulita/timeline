@@ -49,6 +49,7 @@
 				.then(function (data) { return [].concat.apply([], data); })
 				.then(filterData)
 				.then(sortData)
+				.then(validateData)
 				.then(createChildren)
 				.then(function () { group.loaded = true; })
 				.catch(function () {
@@ -83,14 +84,19 @@
 				}
 			}
 
-			function createChildren(data) {
+			function validateData(data) {
 				/*
-				 * If no data available, assume no data is available for
-				 * this group and notify the controller
+				 * If no data available, assume error in backend (unless
+				 * explicitly told not to), then notify the controller via
+				 * promise-chain error handler
 				 */
-				if (!data.length) {
+				if (!data.length && String(scope.allowEmptyGroups) !== 'true') {
 					return $q.reject('No data');
 				}
+				return data;
+			}
+
+			function createChildren(data) {
 				/* Store data and create subelements if needed */
 				scope.items = data;
 				if (!itemsElement) {
